@@ -8,6 +8,7 @@ add_library(pbc SHARED
 
 set_target_properties(pbc PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
-  CUDA_SEPARABLE_COMPILATION ON)
+  CUDA_SEPARABLE_COMPILATION ON
+  LINKER_LANGUAGE HIP)
 
 #target_link_libraries(ft_ao OpenMP::OpenMP_C)

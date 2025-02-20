@@ -34,6 +34,7 @@ add_library(gvhf SHARED
 
 set_target_properties(gvhf PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
-  CUDA_SEPARABLE_COMPILATION ON)
+  CUDA_SEPARABLE_COMPILATION ON
+  LINKER_LANGUAGE HIP)
 
 target_link_libraries(gvhf gint)
