@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include <stdio.h>
 #define THREADS        8
 
@@ -37,13 +39,13 @@ static void _block_diag(double *out, int m, int n, double *diags, int ndiags, in
 }
 
 extern "C" {
-int block_diag(cudaStream_t stream, double *out, int m, int n, double *diags, int ndiags, int *offsets, int *rows, int *cols)
+int block_diag(hipStream_t stream, double *out, int m, int n, double *diags, int ndiags, int *offsets, int *rows, int *cols)
 {
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ndiags);
     _block_diag<<<blocks, threads, 0, stream>>>(out, m, n, diags, ndiags, offsets, rows, cols);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

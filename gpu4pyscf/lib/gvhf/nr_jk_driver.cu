@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gint/gint.h"
 #include "gint/config.h"
@@ -105,9 +105,9 @@ static int GINTrun_tasks_jk(JKMatrix *jk, BasisProdOffsets *offsets, GINTEnvVars
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GINTint2e_jk_kernel: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GINTint2e_jk_kernel: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -142,9 +142,9 @@ int GINTbuild_jk(BasisProdCache *bpcache,
         GINTinit_2c_gidx(idx_kl, cp_kl->l_bra, cp_kl->l_ket);
         GINTinit_4c_idx(idx4c, idx_ij, idx_kl, &envs);
 
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
-            fprintf(stderr, "CUDA Error of GINTbuild_int2e_kernel: %s\n", cudaGetErrorString(err));
+        hipError_t err = hipGetLastError();
+        if (err != hipSuccess) {
+            fprintf(stderr, "CUDA Error of GINTbuild_int2e_kernel: %s\n", hipGetErrorString(err));
             return 1;
         }
 
@@ -152,7 +152,7 @@ int GINTbuild_jk(BasisProdCache *bpcache,
             DEVICE_INIT(int16_t, d_idx4c, idx4c, envs.nf * 3);
             envs.idx = d_idx4c;
         } else {
-            checkCudaErrors(cudaMemcpyToSymbol(c_idx4c, idx4c, sizeof(int16_t)*envs.nf*3));
+            checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_idx4c), idx4c, sizeof(int16_t)*envs.nf*3));
         }
         free(idx4c);
         free(idx_ij);
@@ -164,9 +164,9 @@ int GINTbuild_jk(BasisProdCache *bpcache,
     int kl_bin, ij_bin1;
     assert(nao < 32768);
     envs.nao = nao;
-    //checkCudaErrors(cudaMemcpyToSymbol(c_envs, &envs, sizeof(GINTEnvVars)));
+    //checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_envs), &envs, sizeof(GINTEnvVars)));
     // move bpcache to constant memory
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     JKMatrix jk;
     jk.n_dm = n_dm;

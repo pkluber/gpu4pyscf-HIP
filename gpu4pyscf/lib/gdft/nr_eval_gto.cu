@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -19,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include "gint/gint.h"
 #include "gint/cuda_alloc.cuh"
 #include "nr_eval_gto.cuh"
@@ -1674,10 +1675,10 @@ void GDFTinit_envs(GTOValEnvVars **envs_cache, int *ao_loc,
         bas_exp[ish] = bas[PTR_EXP + ish * BAS_SLOTS];
         bas_coeff[ish] = bas[PTR_COEFF + ish * BAS_SLOTS];
     }
-    checkCudaErrors(cudaMemcpyToSymbol(c_envs, envs, sizeof(GTOValEnvVars)));
-    checkCudaErrors(cudaMemcpyToSymbol(c_bas_atom, bas_atom, sizeof(uint16_t)*NBAS_MAX));
-    checkCudaErrors(cudaMemcpyToSymbol(c_bas_exp, bas_exp, sizeof(uint16_t)*NBAS_MAX));
-    checkCudaErrors(cudaMemcpyToSymbol(c_bas_coeff, bas_coeff, sizeof(uint16_t)*NBAS_MAX));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_envs), envs, sizeof(GTOValEnvVars)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bas_atom), bas_atom, sizeof(uint16_t)*NBAS_MAX));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bas_exp), bas_exp, sizeof(uint16_t)*NBAS_MAX));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bas_coeff), bas_coeff, sizeof(uint16_t)*NBAS_MAX));
 }
 
 void GDFTdel_envs(GTOValEnvVars **envs_cache)
@@ -1704,7 +1705,7 @@ inline double CINTcommon_fac_sp(int l)
         }
 }
 
-int GDFTeval_gto(cudaStream_t stream, double *ao, int deriv, int cart,
+int GDFTeval_gto(hipStream_t stream, double *ao, int deriv, int cart,
                  double *grids, int ngrids,
                  int *bas_indices,
                  int *ao_loc, int nao,
@@ -1875,9 +1876,9 @@ int GDFTeval_gto(cudaStream_t stream, double *ao, int deriv, int cart,
             fprintf(stderr, "deriv %d not supported\n", deriv);
             return 1;
         }
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
-            fprintf(stderr, "CUDA Error of GDFTeval_gto_kernel: %s\n", cudaGetErrorString(err));
+        hipError_t err = hipGetLastError();
+        if (err != hipSuccess) {
+            fprintf(stderr, "CUDA Error of GDFTeval_gto_kernel: %s\n", hipGetErrorString(err));
             return 1;
         }
     }
@@ -1885,7 +1886,7 @@ int GDFTeval_gto(cudaStream_t stream, double *ao, int deriv, int cart,
     return 0;
 }
 
-int GDFTscreen_index(cudaStream_t stream, int *non0shl_idx, double cutoff,
+int GDFTscreen_index(hipStream_t stream, int *non0shl_idx, double cutoff,
                  double *grids, int ngrids, int *ctr_offsets, int nctr, int *bas)
 {
     dim3 threads(NG_PER_BLOCK);
@@ -1907,9 +1908,9 @@ int GDFTscreen_index(cudaStream_t stream, int *non0shl_idx, double cutoff,
         _screen_index<<<blocks, threads, 0, stream>>> (non0shl_idx, cutoff, l, nprim, grids, ngrids, bas_offset);
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GDFTscreen_index: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GDFTscreen_index: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;

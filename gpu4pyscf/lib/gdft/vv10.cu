@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -19,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include "gint/gint.h"
 #include "gint/cuda_alloc.cuh"
 #include "nr_eval_gto.cuh"
@@ -198,7 +199,7 @@ static void vv10_grad_kernel(double *Fvec, const double *vvcoords, const double 
 
 extern "C" {
 __host__
-int VXC_vv10nlc(cudaStream_t stream, double *Fvec, double *Uvec, double *Wvec,
+int VXC_vv10nlc(hipStream_t stream, double *Fvec, double *Uvec, double *Wvec,
                  const double *vvcoords, const double *coords,
                  const double *W0p, const double *W0, const double *K,
                  const double *Kp, const double *RpW,
@@ -209,16 +210,16 @@ int VXC_vv10nlc(cudaStream_t stream, double *Fvec, double *Uvec, double *Wvec,
     vv10_kernel<<<blocks, threads, 0, stream>>>(Fvec, Uvec, Wvec,
                  vvcoords, coords,
                  W0p, W0, K, Kp, RpW, vvngrids, ngrids);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of vv10: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of vv10: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
 __host__
-int VXC_vv10nlc_grad(cudaStream_t stream, double *Fvec,
+int VXC_vv10nlc_grad(hipStream_t stream, double *Fvec,
                     const double *vvcoords, const double *coords,
                     const double *W0p, const double *W0, const double *K,
                     const double *Kp, const double *RpW,
@@ -228,9 +229,9 @@ int VXC_vv10nlc_grad(cudaStream_t stream, double *Fvec,
     dim3 blocks((ngrids+NG_PER_BLOCK-1)/NG_PER_BLOCK);
     vv10_grad_kernel<<<blocks, threads, 0, stream>>>(Fvec, vvcoords, coords,
                       W0p, W0, K, Kp, RpW, vvngrids, ngrids);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of vv10 grad: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of vv10 grad: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;

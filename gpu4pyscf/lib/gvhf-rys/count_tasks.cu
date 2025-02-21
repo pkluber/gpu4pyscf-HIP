@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -18,7 +19,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "vhf.cuh"
 #include "create_tasks.cu"
@@ -95,7 +96,7 @@ int RYS_count_jk_tasks(double *vj, double *vk, double *dm, int n_dm, int nao,
         q_cond, tile_q_cond, s_estimator, dm_cond, cutoff};
     JKMatrix jk = {vj, vk, dm, (uint16_t)n_dm};
 
-    cudaMemset(batch_head, 0, 2*sizeof(uint32_t));
+    hipMemset(batch_head, 0, 2*sizeof(uint32_t));
 
     int threads = scheme[0]*scheme[1];
     int buflen = threads;

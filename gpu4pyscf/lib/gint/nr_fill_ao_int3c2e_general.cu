@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gint.h"
 #include "config.h"
@@ -39,7 +39,7 @@
 #include "g3c2e_ipip2.cu"
 
 __host__
-static int GINTfill_int3c2e_ip1_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, cudaStream_t stream)
+static int GINTfill_int3c2e_ip1_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, hipStream_t stream)
 {
     int nrys_roots = envs->nrys_roots;
     int ntasks_ij = offsets->ntasks_ij;
@@ -63,16 +63,16 @@ static int GINTfill_int3c2e_ip1_tasks(ERITensor *eri, BasisProdOffsets *offsets,
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GINTfill_int2e_ip1_kernel: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GINTfill_int2e_ip1_kernel: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
 __host__
-static int GINTfill_int3c2e_ip2_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, cudaStream_t stream)
+static int GINTfill_int3c2e_ip2_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, hipStream_t stream)
 {
     int nrys_roots = envs->nrys_roots;
     int ntasks_ij = offsets->ntasks_ij;
@@ -95,16 +95,16 @@ static int GINTfill_int3c2e_ip2_tasks(ERITensor *eri, BasisProdOffsets *offsets,
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GINTfill_int3c2e_ip2_kernel: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GINTfill_int3c2e_ip2_kernel: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
 __host__
-static int GINTfill_int3c2e_ipip_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, int ip_type, cudaStream_t stream)
+static int GINTfill_int3c2e_ipip_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, int ip_type, hipStream_t stream)
 {
     int nrys_roots = envs->nrys_roots;
     int ntasks_ij = offsets->ntasks_ij;
@@ -182,13 +182,13 @@ static int GINTfill_int3c2e_ipip_tasks(ERITensor *eri, BasisProdOffsets *offsets
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         size_t free, total, GB;
         GB = 1024 * 1024 * 1024;
-        cudaMemGetInfo(&free, &total);
+        hipMemGetInfo(&free, &total);
         fprintf(stderr, "-------------------- error info ------------------------------");
-        fprintf(stderr, "CUDA Error of GINTfill_int3c2e_ipip_kernel: %s\n", cudaGetErrorString(err));
+        fprintf(stderr, "CUDA Error of GINTfill_int3c2e_ipip_kernel: %s\n", hipGetErrorString(err));
         fprintf(stderr, "IP type: %d\n", ip_type);
         fprintf(stderr, "Angular momentum: (%d, %d, %d, %d)\n", envs->i_l, envs->j_l, envs->k_l, envs->l_l);
         fprintf(stderr, "%d GB free memory, %d GB total memory\n", free/GB, total/GB);
@@ -202,7 +202,7 @@ static int GINTfill_int3c2e_ipip_tasks(ERITensor *eri, BasisProdOffsets *offsets
 extern "C" {
 
 
-int GINTfill_int3c2e_ip(cudaStream_t stream, BasisProdCache *bpcache, double *eri, int nao,
+int GINTfill_int3c2e_ip(hipStream_t stream, BasisProdCache *bpcache, double *eri, int nao,
                    int *strides, int *ao_offsets,
                    int *bins_locs_ij, int *bins_locs_kl, int nbins,
                    int cp_ij_id, int cp_kl_id, int ip_type, double omega)
@@ -231,15 +231,15 @@ int GINTfill_int3c2e_ip(cudaStream_t stream, BasisProdCache *bpcache, double *er
     if (envs.nrys_roots > 1) {
         int16_t *idx4c = (int16_t *)malloc(sizeof(int16_t) * envs.nf * 3);
         GINTg2e_index_xyz(idx4c, &envs);
-        checkCudaErrors(cudaMemcpyToSymbol(c_idx4c, idx4c, sizeof(int16_t)*envs.nf*3));
+        checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_idx4c), idx4c, sizeof(int16_t)*envs.nf*3));
         free(idx4c);
     }
 
     int kl_bin, ij_bin1;
 
-    //checkCudaErrors(cudaMemcpyToSymbol(envs, &envs, sizeof(GINTEnvVars)));
+    //checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(envs), &envs, sizeof(GINTEnvVars)));
     // move bpcache to constant memory
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     ERITensor eritensor;
     eritensor.stride_j = strides[1];
@@ -290,7 +290,7 @@ int GINTfill_int3c2e_ip(cudaStream_t stream, BasisProdCache *bpcache, double *er
     return 0;
 }
 
-int GINTfill_int3c2e_general(cudaStream_t stream, BasisProdCache *bpcache, double *eri, int nao,
+int GINTfill_int3c2e_general(hipStream_t stream, BasisProdCache *bpcache, double *eri, int nao,
                    int *strides, int *ao_offsets,
                    int *bins_locs_ij, int *bins_locs_kl, int nbins,
                    int cp_ij_id, int cp_kl_id, int ip_type, double omega)
@@ -325,15 +325,15 @@ int GINTfill_int3c2e_general(cudaStream_t stream, BasisProdCache *bpcache, doubl
     if (envs.nrys_roots > 1) {
         int16_t *idx4c = (int16_t *)malloc(sizeof(int16_t) * envs.nf * 3);
         GINTg2e_index_xyz(idx4c, &envs);
-        checkCudaErrors(cudaMemcpyToSymbol(c_idx4c, idx4c, sizeof(int16_t)*envs.nf*3));
+        checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_idx4c), idx4c, sizeof(int16_t)*envs.nf*3));
         free(idx4c);
     }
 
     int kl_bin, ij_bin1;
 
-    //checkCudaErrors(cudaMemcpyToSymbol(c_envs, &envs, sizeof(GINTEnvVars)));
+    //checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_envs), &envs, sizeof(GINTEnvVars)));
     // move bpcache to constant memory
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     ERITensor eritensor;
     eritensor.stride_j = strides[1];

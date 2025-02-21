@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 #include "vhf.cuh"
 #include "rys_roots.cu"
 #include "create_tasks_ip1.cu"
@@ -27098,7 +27099,7 @@ int rys_ejk_ip1_unrolled(RysIntEnvVars *envs, JKEnergy *jk, BoundsInfo *bounds,
         rys_ejk_ip1_2010<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 256:
         buflen += 5184;
-        cudaFuncSetAttribute(rys_ejk_ip1_2011, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_ejk_ip1_2011, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_ejk_ip1_2011<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 260:
         rys_ejk_ip1_2020<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
@@ -27109,11 +27110,11 @@ int rys_ejk_ip1_unrolled(RysIntEnvVars *envs, JKEnergy *jk, BoundsInfo *bounds,
         rys_ejk_ip1_2100<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 280:
         buflen += 5184;
-        cudaFuncSetAttribute(rys_ejk_ip1_2110, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_ejk_ip1_2110, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_ejk_ip1_2110<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 281:
         buflen += 4896;
-        cudaFuncSetAttribute(rys_ejk_ip1_2111, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_ejk_ip1_2111, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_ejk_ip1_2111<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 285:
         buflen += 3360;

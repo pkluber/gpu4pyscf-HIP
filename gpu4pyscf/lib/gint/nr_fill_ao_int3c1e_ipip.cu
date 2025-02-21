@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gint.h"
 #include "gint1e.h"
@@ -32,7 +32,7 @@
 static int GINTfill_int3c1e_ipip1_charge_contracted_tasks(double* output, const BasisProdOffsets offsets, const int i_l, const int j_l, const int nprim_ij,
                                                           const int stride_j, const int stride_ij, const int ao_offsets_i, const int ao_offsets_j,
                                                           const double omega, const double* grid_points, const double* charge_exponents,
-                                                          const int n_charge_sum_per_thread, const cudaStream_t stream)
+                                                          const int n_charge_sum_per_thread, const hipStream_t stream)
 {
     const int ntasks_ij = offsets.ntasks_ij;
     const int ngrids = (offsets.ntasks_kl + n_charge_sum_per_thread - 1) / n_charge_sum_per_thread;
@@ -51,9 +51,9 @@ static int GINTfill_int3c1e_ipip1_charge_contracted_tasks(double* output, const 
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -62,7 +62,7 @@ static int GINTfill_int3c1e_ipip1_charge_contracted_tasks(double* output, const 
 static int GINTfill_int3c1e_ipvip1_charge_contracted_tasks(double* output, const BasisProdOffsets offsets, const int i_l, const int j_l, const int nprim_ij,
                                                            const int stride_j, const int stride_ij, const int ao_offsets_i, const int ao_offsets_j,
                                                            const double omega, const double* grid_points, const double* charge_exponents,
-                                                           const int n_charge_sum_per_thread, const cudaStream_t stream)
+                                                           const int n_charge_sum_per_thread, const hipStream_t stream)
 {
     const int ntasks_ij = offsets.ntasks_ij;
     const int ngrids = (offsets.ntasks_kl + n_charge_sum_per_thread - 1) / n_charge_sum_per_thread;
@@ -81,9 +81,9 @@ static int GINTfill_int3c1e_ipvip1_charge_contracted_tasks(double* output, const
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -92,7 +92,7 @@ static int GINTfill_int3c1e_ipvip1_charge_contracted_tasks(double* output, const
 static int GINTfill_int3c1e_ip1ip2_charge_contracted_tasks(double* output, const BasisProdOffsets offsets, const int i_l, const int j_l, const int nprim_ij,
                                                            const int stride_j, const int stride_ij, const int ao_offsets_i, const int ao_offsets_j,
                                                            const double omega, const double* grid_points, const double* charge_exponents,
-                                                           const int n_charge_sum_per_thread, const cudaStream_t stream)
+                                                           const int n_charge_sum_per_thread, const hipStream_t stream)
 {
     const int ntasks_ij = offsets.ntasks_ij;
     const int ngrids = (offsets.ntasks_kl + n_charge_sum_per_thread - 1) / n_charge_sum_per_thread;
@@ -111,9 +111,9 @@ static int GINTfill_int3c1e_ip1ip2_charge_contracted_tasks(double* output, const
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -122,7 +122,7 @@ static int GINTfill_int3c1e_ip1ip2_charge_contracted_tasks(double* output, const
 static int GINTfill_int3c1e_ipip2_density_contracted_tasks(double* output, const double* density, const HermiteDensityOffsets hermite_density_offsets,
                                                            const BasisProdOffsets offsets, const int i_l, const int j_l, const int nprim_ij,
                                                            const double omega, const double* grid_points, const double* charge_exponents,
-                                                           const int n_pair_sum_per_thread, const cudaStream_t stream)
+                                                           const int n_pair_sum_per_thread, const hipStream_t stream)
 {
     const int ntasks_ij = (offsets.ntasks_ij + n_pair_sum_per_thread - 1) / n_pair_sum_per_thread;
     const int ngrids = offsets.ntasks_kl;
@@ -145,16 +145,16 @@ static int GINTfill_int3c1e_ipip2_density_contracted_tasks(double* output, const
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in %s: %s\n", __func__, hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
 extern "C" {
-int GINTfill_int3c1e_ipip1_charge_contracted(const cudaStream_t stream, const BasisProdCache* bpcache,
+int GINTfill_int3c1e_ipip1_charge_contracted(const hipStream_t stream, const BasisProdCache* bpcache,
                                              const double* grid_points, const double* charge_exponents, const int ngrids,
                                              double* integral_charge_contracted,
                                              const int* strides, const int* ao_offsets,
@@ -172,7 +172,7 @@ int GINTfill_int3c1e_ipip1_charge_contracted(const cudaStream_t stream, const Ba
         return 2;
     }
 
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     const int* bas_pairs_locs = bpcache->bas_pairs_locs;
     const int* primitive_pairs_locs = bpcache->primitive_pairs_locs;
@@ -204,7 +204,7 @@ int GINTfill_int3c1e_ipip1_charge_contracted(const cudaStream_t stream, const Ba
     return 0;
 }
 
-int GINTfill_int3c1e_ipvip1_charge_contracted(const cudaStream_t stream, const BasisProdCache* bpcache,
+int GINTfill_int3c1e_ipvip1_charge_contracted(const hipStream_t stream, const BasisProdCache* bpcache,
                                               const double* grid_points, const double* charge_exponents, const int ngrids,
                                               double* integral_charge_contracted,
                                               const int* strides, const int* ao_offsets,
@@ -222,7 +222,7 @@ int GINTfill_int3c1e_ipvip1_charge_contracted(const cudaStream_t stream, const B
         return 2;
     }
 
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     const int* bas_pairs_locs = bpcache->bas_pairs_locs;
     const int* primitive_pairs_locs = bpcache->primitive_pairs_locs;
@@ -254,7 +254,7 @@ int GINTfill_int3c1e_ipvip1_charge_contracted(const cudaStream_t stream, const B
     return 0;
 }
 
-int GINTfill_int3c1e_ip1ip2_charge_contracted(const cudaStream_t stream, const BasisProdCache* bpcache,
+int GINTfill_int3c1e_ip1ip2_charge_contracted(const hipStream_t stream, const BasisProdCache* bpcache,
                                               const double* grid_points, const double* charge_exponents, const int ngrids,
                                               double* integral_charge_contracted,
                                               const int* strides, const int* ao_offsets,
@@ -272,7 +272,7 @@ int GINTfill_int3c1e_ip1ip2_charge_contracted(const cudaStream_t stream, const B
         return 2;
     }
 
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     const int* bas_pairs_locs = bpcache->bas_pairs_locs;
     const int* primitive_pairs_locs = bpcache->primitive_pairs_locs;
@@ -304,7 +304,7 @@ int GINTfill_int3c1e_ip1ip2_charge_contracted(const cudaStream_t stream, const B
     return 0;
 }
 
-int GINTfill_int3c1e_ipip2_density_contracted(const cudaStream_t stream, const BasisProdCache* bpcache,
+int GINTfill_int3c1e_ipip2_density_contracted(const hipStream_t stream, const BasisProdCache* bpcache,
                                               const double* grid_points, const double* charge_exponents, const int ngrids,
                                               const double* dm_pair_ordered, const int* density_offset,
                                               double* integral_density_contracted,
@@ -322,7 +322,7 @@ int GINTfill_int3c1e_ipip2_density_contracted(const cudaStream_t stream, const B
         return 2;
     }
 
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     const int* bas_pairs_locs = bpcache->bas_pairs_locs;
     const int* primitive_pairs_locs = bpcache->primitive_pairs_locs;

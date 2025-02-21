@@ -15,7 +15,7 @@
  */
 
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include <stdio.h>
 #include <iostream>
 #include "cutlass/cutlass.h"
@@ -37,10 +37,10 @@
 
 static int get_device_compute_capability() {
   int device;
-  cudaGetDevice(&device);
+  hipGetDevice(&device);
 
-  cudaDeviceProp properties;
-  cudaGetDeviceProperties(&properties, device);
+  hipDeviceProp_t properties;
+  hipGetDeviceProperties(&properties, device);
 
   return properties.major * 10 + properties.minor;
 }
@@ -210,8 +210,8 @@ void grouped_gemm_kernel_launch(uint64_t *out, uint64_t *x, uint64_t *y, int64_t
 }
 
 extern "C" {
-// int dgemm(cudaStream_t stream, double **ptr_out, double **ptr_x, double **ptr_y, int64_t *Ms, int64_t *Ns, int64_t *Ks, int64_t *MNKs, int groups)
-int grouped_gemm(cudaStream_t stream, uint64_t *out, uint64_t *x, uint64_t *y, int64_t *Ms, int64_t *Ns, int64_t *Ks, int num)
+// int dgemm(hipStream_t stream, double **ptr_out, double **ptr_x, double **ptr_y, int64_t *Ms, int64_t *Ns, int64_t *Ks, int64_t *MNKs, int groups)
+int grouped_gemm(hipStream_t stream, uint64_t *out, uint64_t *x, uint64_t *y, int64_t *Ms, int64_t *Ns, int64_t *Ks, int num)
 {
     int compute_capability = get_device_compute_capability();
 
@@ -231,9 +231,9 @@ int grouped_gemm(cudaStream_t stream, uint64_t *out, uint64_t *x, uint64_t *y, i
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    // printf("%s\n", cudaGetErrorString(err));
-    if (err != cudaSuccess)
+    hipError_t err = hipGetLastError();
+    // printf("%s\n", hipGetErrorString(err));
+    if (err != hipSuccess)
         return 1;
     return 0;
 }

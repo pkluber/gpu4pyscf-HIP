@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -18,7 +19,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gvhf-rys/vhf.cuh"
 
@@ -412,9 +413,9 @@ int MD_build_j(double *vj, double *dm, int n_dm, int nao,
         dim3 blocks(blocks_ij, blocks_kl);
         md_j_kernel<<<blocks, threads, buflen*sizeof(double)>>>(envs, jk, bounds);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in MD_build_j: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in MD_build_j: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -440,16 +441,16 @@ int init_mdj_constant(int shm_size)
             }
         } }
     }
-    cudaMemcpyToSymbol(c_Rt_idx, Rt_idx, sizeof(Rt_idx)); // reuse these buffer to store Rt1_idx
-    cudaMemcpyToSymbol(c_Rt_offsets, Rt_idx_offsets, sizeof(Rt_idx_offsets));
-    cudaMemcpyToSymbol(c_i_in_fold2idx, i_in_fold2idx, 165*sizeof(Fold2Index));
-    cudaMemcpyToSymbol(c_i_in_fold3idx, i_in_fold3idx, 495*sizeof(Fold3Index));
-    cudaFuncSetAttribute(md_j_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipMemcpyToSymbol(HIP_SYMBOL(c_Rt_idx), Rt_idx, sizeof(Rt_idx)); // reuse these buffer to store Rt1_idx
+    hipMemcpyToSymbol(HIP_SYMBOL(c_Rt_offsets), Rt_idx_offsets, sizeof(Rt_idx_offsets));
+    hipMemcpyToSymbol(HIP_SYMBOL(c_i_in_fold2idx), i_in_fold2idx, 165*sizeof(Fold2Index));
+    hipMemcpyToSymbol(HIP_SYMBOL(c_i_in_fold3idx), i_in_fold3idx, 495*sizeof(Fold3Index));
+    hipFuncSetAttribute(md_j_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
     set_md_j_unrolled_shm_size();
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         fprintf(stderr, "Failed to set CUDA shm size %d: %s\n", shm_size,
-                cudaGetErrorString(err));
+                hipGetErrorString(err));
         return 1;
     }
     return 0;

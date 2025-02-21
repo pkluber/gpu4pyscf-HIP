@@ -15,11 +15,11 @@
  */
 
 #include <stdio.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 extern "C" {
 __host__
-int async_d2h_2d(cudaStream_t stream, double *dst, int dstride, const double *src, int sstride, 
+int async_d2h_2d(hipStream_t stream, double *dst, int dstride, const double *src, int sstride, 
                 int rows, int cols)
 {
     void* host_ptr = (void *)dst;
@@ -29,15 +29,15 @@ int async_d2h_2d(cudaStream_t stream, double *dst, int dstride, const double *sr
     int width = rows * sizeof(double);
     int height = cols * sizeof(double);
     
-    cudaError_t err = cudaMemcpy2DAsync(host_ptr, dpitch, device_ptr, spitch, 
-                                        width, height, cudaMemcpyDeviceToHost);
+    hipError_t err = hipMemcpy2DAsync(host_ptr, dpitch, device_ptr, spitch, 
+                                        width, height, hipMemcpyDeviceToHost);
     /*
-    cudaError_t err = cudaMemcpy2D(dst, dpitch, src, spitch, 
-                                    width, height, cudaMemcpyDeviceToHost);
+    hipError_t err = hipMemcpy2D(dst, dpitch, src, spitch, 
+                                    width, height, hipMemcpyDeviceToHost);
     */
     printf("%zd \n", sizeof(size_t));
-    if(err != cudaSuccess){
-        const char *err_str = cudaGetErrorString(err);
+    if(err != hipSuccess){
+        const char *err_str = hipGetErrorString(err);
         fprintf(stderr, "CUDA error of d2h_2d\n");
         fprintf(stderr, "err reason %s\n", err_str);
         return 1;

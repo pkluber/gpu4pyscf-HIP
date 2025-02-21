@@ -1,4 +1,5 @@
-#include <cuda.h>
+#include "hip/hip_runtime.h"
+#include <hip/hip_runtime.h>
 #include "vhf.cuh"
 #include "rys_roots.cu"
 #include "create_tasks_ip1.cu"
@@ -39431,7 +39432,7 @@ int rys_vjk_ip1_unrolled(RysIntEnvVars *envs, JKMatrix *jk, BoundsInfo *bounds,
         rys_vjk_ip1_0120<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 36:
         buflen += 4992;
-        cudaFuncSetAttribute(rys_vjk_ip1_0121, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_vjk_ip1_0121, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_vjk_ip1_0121<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 50:
         rys_vjk_ip1_0200<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
@@ -39439,7 +39440,7 @@ int rys_vjk_ip1_unrolled(RysIntEnvVars *envs, JKMatrix *jk, BoundsInfo *bounds,
         rys_vjk_ip1_0210<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 56:
         buflen += 4992;
-        cudaFuncSetAttribute(rys_vjk_ip1_0211, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_vjk_ip1_0211, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_vjk_ip1_0211<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 60:
         buflen += 3840;
@@ -39461,7 +39462,7 @@ int rys_vjk_ip1_unrolled(RysIntEnvVars *envs, JKMatrix *jk, BoundsInfo *bounds,
         rys_vjk_ip1_1110<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 156:
         buflen += 4992;
-        cudaFuncSetAttribute(rys_vjk_ip1_1111, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_vjk_ip1_1111, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_vjk_ip1_1111<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 160:
         buflen += 3840;

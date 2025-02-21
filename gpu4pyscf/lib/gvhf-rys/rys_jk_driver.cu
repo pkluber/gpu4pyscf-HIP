@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -18,8 +20,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "vhf.cuh"
 
@@ -109,7 +111,7 @@ int RYS_build_j(double *vj, double *dm, int n_dm, int nao,
         q_cond, tile_q_cond, s_estimator, dm_cond, cutoff};
 
     JKMatrix jk = {vj, NULL, dm, (uint16_t)n_dm};
-    cudaMemset(batch_head, 0, 2*sizeof(uint32_t));
+    hipMemset(batch_head, 0, 2*sizeof(uint32_t));
 
     if (!rys_j_unrolled(&envs, &jk, &bounds, pool, batch_head, scheme, workers)) {
         int quartets_per_block = scheme[0];
@@ -132,9 +134,9 @@ int RYS_build_j(double *vj, double *dm, int n_dm, int nao,
             rys_j_kernel<<<workers, threads, buflen*sizeof(double)>>>(envs, jk, bounds, pool, batch_head);
         }
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in RYS_build_j: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in RYS_build_j: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -182,7 +184,7 @@ int RYS_build_jk(double *vj, double *vk, double *dm, int n_dm, int nao,
         q_cond, tile_q_cond, s_estimator, dm_cond, cutoff};
 
     JKMatrix jk = {vj, vk, dm, (uint16_t)n_dm};
-    cudaMemset(batch_head, 0, 2*sizeof(uint32_t));
+    hipMemset(batch_head, 0, 2*sizeof(uint32_t));
 
     if (order == 0) {
         os_jk_unrolled(&envs, &jk, &bounds, pool, batch_head, scheme, workers, omega);
@@ -194,9 +196,9 @@ int RYS_build_jk(double *vj, double *vk, double *dm, int n_dm, int nao,
         int buflen = (nroots*2 + g_size*3 + ij_prims + 9) * quartets_per_block;// + ij_prims*4*TILE2;
         rys_jk_kernel<<<workers, threads, buflen*sizeof(double)>>>(envs, jk, bounds, pool, batch_head);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in RYS_build_jk: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in RYS_build_jk: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -244,7 +246,7 @@ int RYS_build_jk_ip1(double *vj, double *vk, double *dm, int n_dm, int nao, int 
         q_cond, tile_q_cond, s_estimator, dm_cond, cutoff};
 
     JKMatrix jk = {vj, vk, dm, (uint16_t)n_dm, (uint16_t)atom_offset};
-    cudaMemset(batch_head, 0, 2*sizeof(uint32_t));
+    hipMemset(batch_head, 0, 2*sizeof(uint32_t));
 
     if (!rys_vjk_ip1_unrolled(&envs, &jk, &bounds, pool, batch_head, scheme, workers)) {
         int quartets_per_block = scheme[0];
@@ -255,9 +257,9 @@ int RYS_build_jk_ip1(double *vj, double *vk, double *dm, int n_dm, int nao, int 
         buflen += ij_prims*6;
         rys_jk_ip1_kernel<<<workers, threads, buflen*sizeof(double)>>>(envs, jk, bounds, pool, batch_head);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in RYS_build_jk_ip1: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in RYS_build_jk_ip1: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -311,7 +313,7 @@ int RYS_per_atom_jk_ip1(double *ejk, double j_factor, double k_factor,
     // *4 for the symmetry (i,j) = (j,i), (k,l) = (l,k) in J contraction
     // Additional factor 1/2 from the two-electron Coulomb operator
     JKEnergy jk = {ejk, dm, 2.*j_factor, -k_factor, (uint16_t)n_dm};
-    cudaMemset(batch_head, 0, 2*sizeof(int));
+    hipMemset(batch_head, 0, 2*sizeof(int));
 
     if (!rys_ejk_ip1_unrolled(&envs, &jk, &bounds, pool, dd_pool, batch_head, scheme, workers)) {
         int quartets_per_block = scheme[0];
@@ -323,9 +325,9 @@ int RYS_per_atom_jk_ip1(double *ejk, double j_factor, double k_factor,
         rys_ejk_ip1_kernel<<<workers, threads, buflen*sizeof(double)>>>(
                 envs, jk, bounds, pool, dd_pool, batch_head);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in RYS_ejk_ip1: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in RYS_ejk_ip1: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -379,7 +381,7 @@ int RYS_per_atom_jk_ip2_type12(double *ejk, double j_factor, double k_factor,
     // *4 for the symmetry (i,j) = (j,i), (k,l) = (l,k) in J contraction
     // Additional factor 1/2 from the two-electron Coulomb operator
     JKEnergy jk = {ejk, dm, 4.*j_factor, -k_factor, (uint16_t)n_dm};
-    cudaMemset(batch_head, 0, 2*sizeof(int));
+    hipMemset(batch_head, 0, 2*sizeof(int));
 
     if (!rys_ejk_ip2_type12_unrolled(&envs, &jk, &bounds, pool, dd_pool, batch_head, scheme, workers)) {
         int quartets_per_block = scheme[0];
@@ -390,9 +392,9 @@ int RYS_per_atom_jk_ip2_type12(double *ejk, double j_factor, double k_factor,
         rys_ejk_ip2_type12_kernel<<<workers, threads, buflen*sizeof(double)>>>(
                 envs, jk, bounds, pool, dd_pool, batch_head);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in RYS_ejk_ip2_type12: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in RYS_ejk_ip2_type12: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -446,7 +448,7 @@ int RYS_per_atom_jk_ip2_type3(double *ejk, double j_factor, double k_factor,
     // *4 for the symmetry (i,j) = (j,i), (k,l) = (l,k) in J contraction
     // Additional factor 1/2 from the two-electron Coulomb operator
     JKEnergy jk = {ejk, dm, 4.*j_factor, -k_factor, (uint16_t)n_dm};
-    cudaMemset(batch_head, 0, 2*sizeof(int));
+    hipMemset(batch_head, 0, 2*sizeof(int));
 
     if (!rys_ejk_ip2_type3_unrolled(&envs, &jk, &bounds, pool, dd_pool, batch_head, scheme, workers)) {
         int quartets_per_block = scheme[0];
@@ -458,9 +460,9 @@ int RYS_per_atom_jk_ip2_type3(double *ejk, double j_factor, double k_factor,
         rys_ejk_ip2_type3_kernel<<<workers, threads, buflen*sizeof(double)>>>(
                 envs, jk, bounds, pool, dd_pool, batch_head);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in RYS_ejk_ip2_type3: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in RYS_ejk_ip2_type3: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -470,18 +472,18 @@ int RYS_init_constant(int *g_pair_idx, int *offsets,
                       double *env, int env_size, int shm_size)
 {
     // TODO: test whether the constant memory c_env can improve performance
-    //cudaMemcpyToSymbol(c_env, env, sizeof(double)*env_size);
-    cudaMemcpyToSymbol(c_g_pair_idx, g_pair_idx, 3675*sizeof(int));
-    cudaMemcpyToSymbol(c_g_pair_offsets, offsets, sizeof(int) * LMAX1*LMAX1);
-    cudaFuncSetAttribute(rys_jk_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaFuncSetAttribute(rys_jk_ip1_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaFuncSetAttribute(rys_ejk_ip1_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaFuncSetAttribute(rys_ejk_ip2_type12_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaFuncSetAttribute(rys_ejk_ip2_type3_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    //hipMemcpyToSymbol(HIP_SYMBOL(c_env), env, sizeof(double)*env_size);
+    hipMemcpyToSymbol(HIP_SYMBOL(c_g_pair_idx), g_pair_idx, 3675*sizeof(int));
+    hipMemcpyToSymbol(HIP_SYMBOL(c_g_pair_offsets), offsets, sizeof(int) * LMAX1*LMAX1);
+    hipFuncSetAttribute(rys_jk_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipFuncSetAttribute(rys_jk_ip1_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipFuncSetAttribute(rys_ejk_ip1_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipFuncSetAttribute(rys_ejk_ip2_type12_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipFuncSetAttribute(rys_ejk_ip2_type3_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         fprintf(stderr, "Failed to set CUDA shm size %d: %s\n", shm_size,
-                cudaGetErrorString(err));
+                hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -507,14 +509,14 @@ int RYS_init_rysj_constant(int shm_size)
             }
         } }
     }
-    cudaMemcpyToSymbol(c_i_in_fold2idx, i_in_fold2idx, 165*sizeof(Fold2Index));
-    cudaMemcpyToSymbol(c_i_in_fold3idx, i_in_fold3idx, 495*sizeof(Fold3Index));
-    cudaFuncSetAttribute(rys_j_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaFuncSetAttribute(rys_j_with_gout_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipMemcpyToSymbol(HIP_SYMBOL(c_i_in_fold2idx), i_in_fold2idx, 165*sizeof(Fold2Index));
+    hipMemcpyToSymbol(HIP_SYMBOL(c_i_in_fold3idx), i_in_fold3idx, 495*sizeof(Fold3Index));
+    hipFuncSetAttribute(rys_j_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipFuncSetAttribute(rys_j_with_gout_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         fprintf(stderr, "Failed to set CUDA shm size %d: %s\n", shm_size,
-                cudaGetErrorString(err));
+                hipGetErrorString(err));
         return 1;
     }
     return 0;

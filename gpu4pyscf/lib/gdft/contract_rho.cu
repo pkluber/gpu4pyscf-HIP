@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -19,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include "contract_rho.cuh"
 // TODO: improve this?
 __global__
@@ -276,81 +277,81 @@ void GDFT_make_dR_dao_w_kernel(double *out, double *ket, double *wv,
 
 extern "C"{
 __host__
-int GDFTcontract_rho(cudaStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao)
+int GDFTcontract_rho(hipStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao)
 {
     dim3 threads(BLKSIZEX, BLKSIZEY);
     dim3 blocks((ngrids+BLKSIZEX-1)/BLKSIZEX);
     GDFTcontract_rho_kernel<<<blocks, threads, 0, stream>>>(rho, bra, ket, ngrids, nao);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GDFTcontract_rho: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GDFTcontract_rho: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
-int GDFTcontract_rho4(cudaStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao, int count)
+int GDFTcontract_rho4(hipStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao, int count)
 {
     dim3 threads(BLKSIZEX, BLKSIZEY);
     dim3 blocks((ngrids+BLKSIZEX-1)/BLKSIZEX);
     GDFTcontract_rho4_kernel<<<blocks, threads, 0, stream>>>(rho, bra, ket, ngrids, nao, count);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GDFTcontract_rho: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GDFTcontract_rho: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
-int GDFTcontract_rho_gga(cudaStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao)
+int GDFTcontract_rho_gga(hipStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao)
 {
     dim3 threads(BLKSIZEX, BLKSIZEY);
     dim3 blocks((ngrids+BLKSIZEX-1)/BLKSIZEX);
     GDFTcontract_rho_gga_kernel<<<blocks, threads, 0, stream>>>(rho, bra, ket, ngrids, nao);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GDFTcontract_rho_gga: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GDFTcontract_rho_gga: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
-int GDFTcontract_rho_mgga(cudaStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao)
+int GDFTcontract_rho_mgga(hipStream_t stream, double *rho, double *bra, double *ket, int ngrids, int nao)
 {
     dim3 threads(BLKSIZEX, BLKSIZEY);
     dim3 blocks((ngrids+BLKSIZEX-1)/BLKSIZEX);
     GDFTcontract_rho_mgga_kernel<<<blocks, threads, 0, stream>>>(rho, bra, ket, ngrids, nao);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GDFTcontract_rho_mgga: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GDFTcontract_rho_mgga: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
-int GDFT_make_dR_dao_w(cudaStream_t stream, double *out, double *ket, double *wv,
+int GDFT_make_dR_dao_w(hipStream_t stream, double *out, double *ket, double *wv,
                  int ngrids, int nao)
 {
     dim3 threads(BLKSIZEX, BLKSIZEY);
     dim3 blocks((ngrids+BLKSIZEX-1)/BLKSIZEX, (nao+BLKSIZEY-1)/BLKSIZEY);
     GDFT_make_dR_dao_w_kernel<<<blocks, threads, 0, stream>>>(out, ket, wv, ngrids, nao);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GDFT_make_dR_dao_w: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GDFT_make_dR_dao_w: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
-int GDFTscale_ao(cudaStream_t stream, double *out, double *ket, double *wv,
+int GDFTscale_ao(hipStream_t stream, double *out, double *ket, double *wv,
                  int ngrids, int nao, int nvar)
 {
     dim3 threads(BLKSIZEX, BLKSIZEY);
     dim3 blocks((ngrids+BLKSIZEX-1)/BLKSIZEX, (nao+BLKSIZEY-1)/BLKSIZEY);
     GDFTscale_ao_kernel<<<blocks, threads, 0, stream>>>(out, ket, wv, ngrids, nao, nvar);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GDFTscale_ao: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GDFTscale_ao: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;

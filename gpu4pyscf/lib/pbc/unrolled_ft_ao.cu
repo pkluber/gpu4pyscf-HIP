@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2024-2025 The PySCF Developers. All Rights Reserved.
  *
@@ -16,8 +17,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime.h>
 #include "gvhf-rys/vhf.cuh"
 #include "ft_ao.cuh"
 #define OVERLAP_FAC     5.56832799683170787

@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -15,7 +17,7 @@
  */
 
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include <stdio.h>
 #define THREADS       32
 #define BDIM 32
@@ -68,21 +70,21 @@ void _unpack_sparse(const double *cderi_sparse, const long *row, const long *col
 }
 
 extern "C" {
-int unpack_tril(cudaStream_t stream, const double *eri_tril, double *eri, int nao, int blk_size){
+int unpack_tril(hipStream_t stream, const double *eri_tril, double *eri, int nao, int blk_size){
     dim3 threads(THREADS, THREADS);
     int nx = (nao + threads.x - 1) / threads.x;
     int ny = (nao + threads.y - 1) / threads.y;
     dim3 blocks(nx, ny, blk_size);
     _unpack_tril<<<blocks, threads, 0, stream>>>(eri_tril, eri, nao);
     _unpack_triu<<<blocks, threads, 0, stream>>>(eri_tril, eri, nao);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;
 }
 
-int unpack_sparse(cudaStream_t stream, const double *cderi_sparse, const long *row, const long *col,
+int unpack_sparse(hipStream_t stream, const double *cderi_sparse, const long *row, const long *col,
                 double *eri, int nao, int nij, int naux, int p0, int p1){
     int blockx = (nij + THREADS - 1) / THREADS;
     int blocky = (p1 - p0 + THREADS - 1) / THREADS;
@@ -90,8 +92,8 @@ int unpack_sparse(cudaStream_t stream, const double *cderi_sparse, const long *r
     dim3 blocks(blockx, blocky);
 
     _unpack_sparse<<<blocks, threads, 0, stream>>>(cderi_sparse, row, col, eri, nao, nij, naux, p0, p1);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

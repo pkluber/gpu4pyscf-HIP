@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -19,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include "gint/cuda_alloc.cuh"
 
 #define THREADSX        32
@@ -420,7 +421,7 @@ int GDFTdot_ao_dm_sparse(double *out, double *ao, double *dm, int trans_dm,
     int grid_blocks = (ngrids + THREADSX - 1) / THREADSX;
     int bas_blocks = (nbas + THREADSY - 1) / THREADSY;
     int nao = ao_loc[nbas];
-    checkCudaErrors(cudaMemset(out, 0, sizeof(double)*ngrids*nao));
+    checkCudaErrors(hipMemset(out, 0, sizeof(double)*ngrids*nao));
     DEVICE_INIT(uint8_t, d_sindex, screen_index, grid_blocks * bas_blocks);
     DEVICE_INIT(uint8_t, d_pair_mask, pair_mask, bas_blocks * bas_blocks);
     DEVICE_INIT(int, d_ao_loc, ao_loc, (nbas + 1));
@@ -444,10 +445,10 @@ int GDFTdot_ao_dm_sparse(double *out, double *ao, double *dm, int trans_dm,
                                             nbins, nsegs, d_seg_loc, d_sindex,
                                             d_pair_mask, d_ao_loc);
         }
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
+        hipError_t err = hipGetLastError();
+        if (err != hipSuccess) {
             fprintf(stderr, "CUDA Error of GDFTdot_ao_dm_sparse: %s\n",
-                    cudaGetErrorString(err));
+                    hipGetErrorString(err));
             err_code = 1;
             goto cleanup;
         }
@@ -492,10 +493,10 @@ int GDFTdot_aow_ao_sparse(double *out, double *bra, double *ket, double *wv,
         dim3 blocks(ntasks, degen_i, degen_j);
         _dot_aow_ao<<<blocks, threads>>>(out, bra, ket, wv, ngrids, nbas, nbins, d_sindex,
                                          d_pair2bra+task0, d_pair2ket+task0, d_ao_loc);
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
+        hipError_t err = hipGetLastError();
+        if (err != hipSuccess) {
             fprintf(stderr, "CUDA Error of GDFTdot_aow_ao_sparse: %s\n",
-                    cudaGetErrorString(err));
+                    hipGetErrorString(err));
             err_code = 1;
             goto cleanup;
         }
@@ -539,10 +540,10 @@ int GDFTdot_ao_ao_sparse(double *out, double *bra, double *ket,
         dim3 blocks(ntasks, degen_i, degen_j);
         _dot_ao_ao<<<blocks, threads>>>(out, bra, ket, ngrids, nbas, nbins, d_sindex,
                                         d_pair2bra+task0, d_pair2ket+task0, d_ao_loc);
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
+        hipError_t err = hipGetLastError();
+        if (err != hipSuccess) {
             fprintf(stderr, "CUDA Error of GDFTdot_ao_ao_sparse: %s\n",
-                    cudaGetErrorString(err));
+                    hipGetErrorString(err));
             err_code = 1;
             goto cleanup;
         }

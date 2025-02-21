@@ -1,4 +1,5 @@
-#include <cuda.h>
+#include "hip/hip_runtime.h"
+#include <hip/hip_runtime.h>
 #include "vhf.cuh"
 #include "rys_roots.cu"
 #include "create_tasks.cu"

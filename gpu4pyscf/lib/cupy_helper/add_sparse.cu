@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #define THREADS        32
 #define BLOCK_DIM   32
@@ -36,13 +38,13 @@ void _add_sparse(double *a, double *b, int *indices, int n, int m, int count)
 
 extern "C" {
 __host__
-int add_sparse(cudaStream_t stream, double *a, double *b, int *indices, int n, int m, int count){
+int add_sparse(hipStream_t stream, double *a, double *b, int *indices, int n, int m, int count){
     int ntile = (m + THREADS - 1) / THREADS;
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ntile, ntile);
     _add_sparse<<<blocks, threads, 0, stream>>>(a, b, indices, n, m, count);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

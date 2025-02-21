@@ -1,8 +1,9 @@
+#include "hip/hip_runtime.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <cuda_runtime.h>
-#include <cuda.h>
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime.h>
 #include "gvhf-rys/vhf.cuh"
 #include "gvhf-rys/rys_roots.cu"
 #include "int3c2e.cuh"

@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2024-2025 The PySCF Developers. All Rights Reserved.
  *
@@ -17,8 +18,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gvhf-rys/vhf.cuh"
 #include "int3c2e.cuh"
@@ -81,9 +82,9 @@ int build_ft_ao(double *out, AFTIntEnvVars *envs,
         int buflen = g_size*6 * nGv_per_block * nsp_per_block;
         ft_aopair_kernel<<<blocks, threads, buflen*sizeof(double)>>>(out, *envs, bounds);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in build_ft_ao: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in build_ft_ao: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -95,9 +96,9 @@ int ft_aopair_fill_triu(double *out, int *conj_mapping, int nao, int bvk_ncells,
     int threads = 1024;
     dim3 blocks(nao, nao);
     ft_aopair_fill_triu<<<blocks, threads>>>(out, conj_mapping, bvk_ncells, nGv2);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in ft_aopair_fill_triu: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in ft_aopair_fill_triu: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -152,9 +153,9 @@ int fill_int3c2e(double *out, PBCInt3c2eEnvVars *envs,
         int buflen = (nroots*2+g_size*3+6) * (nksh_per_block * nsp_per_block) * sizeof(double);
         pbc_int3c2e_kernel<<<blocks, threads, buflen>>>(out, *envs, bounds);
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in fill_int3c2e: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in fill_int3c2e: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -176,9 +177,9 @@ int int3c2e_img_counts(int *img_counts, PBCInt3c2eEnvVars *envs,
     buflen = MAX(buflen, threads*sizeof(int));
     sr_int3c2e_img_counts_kernel<<<blocks, threads, buflen>>>(
         img_counts, *envs, exps, log_cs, aux_exps, ish0, jsh0, nish, njsh);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in int3c2e_q_mask: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in int3c2e_q_mask: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -203,9 +204,9 @@ int int3c2e_img_idx(int *img_idx, int *img_offsets, int *bas_mapping, int nrow,
     sr_int3c2e_img_idx_kernel<<<nrow, threads, buflen>>>(
         img_idx, img_offsets, bas_mapping, *envs,
         exps, log_cs, aux_exps, ish0, jsh0, nish, njsh);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error in int3c2e_img_idx: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error in int3c2e_img_idx: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -214,8 +215,8 @@ int int3c2e_img_idx(int *img_idx, int *img_offsets, int *bas_mapping, int nrow,
 int init_constant(int *g_pair_idx, int *offsets,
                   double *env, int env_size, int shm_size)
 {
-    cudaMemcpyToSymbol(c_g_pair_idx, g_pair_idx, 3675*sizeof(int));
-    cudaMemcpyToSymbol(c_g_pair_offsets, offsets, sizeof(int) * LMAX1*LMAX1);
+    hipMemcpyToSymbol(HIP_SYMBOL(c_g_pair_idx), g_pair_idx, 3675*sizeof(int));
+    hipMemcpyToSymbol(HIP_SYMBOL(c_g_pair_offsets), offsets, sizeof(int) * LMAX1*LMAX1);
 
     int *g_cart_idx = (int *)malloc(252*sizeof(int));
     int *idx, *idy, *idz;
@@ -233,15 +234,15 @@ int init_constant(int *g_pair_idx, int *offsets,
         } }
         idx += nf * 3;
     }
-    cudaMemcpyToSymbol(c_g_cart_idx, g_cart_idx, 252*sizeof(int));
+    hipMemcpyToSymbol(HIP_SYMBOL(c_g_cart_idx), g_cart_idx, 252*sizeof(int));
     free(g_cart_idx);
 
-    cudaFuncSetAttribute(ft_aopair_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaFuncSetAttribute(pbc_int3c2e_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, shm_size);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipFuncSetAttribute(ft_aopair_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipFuncSetAttribute(pbc_int3c2e_kernel, hipFuncAttributeMaxDynamicSharedMemorySize, shm_size);
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         fprintf(stderr, "Failed to set CUDA shm size %d: %s\n", shm_size,
-                cudaGetErrorString(err));
+                hipGetErrorString(err));
         return 1;
     }
     return 0;

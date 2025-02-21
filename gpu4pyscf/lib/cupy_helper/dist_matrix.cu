@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include <stdio.h>
 #define THREADS        32
 
@@ -34,15 +36,15 @@ static void _calc_distances(double *dist, const double *x, const double *y, int 
 }
 
 extern "C" {
-int dist_matrix(cudaStream_t stream, double *dist, const double *x, const double *y, int m, int n)
+int dist_matrix(hipStream_t stream, double *dist, const double *x, const double *y, int m, int n)
 {
     int ntilex = (m + THREADS - 1) / THREADS;
     int ntiley = (n + THREADS - 1) / THREADS;
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ntilex, ntiley);
     _calc_distances<<<blocks, threads, 0, stream>>>(dist, x, y, m, n);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

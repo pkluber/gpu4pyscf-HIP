@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include <stdio.h>
 #define THREADS        32
 #define COUNT_BLOCK     80
@@ -57,27 +59,27 @@ static void _takebak(double *out, double *a, int *indices,
 }
 
 extern "C" {
-int take_last2d(cudaStream_t stream, double *a, const double *b, int *indices, int blk_size, int n)
+int take_last2d(hipStream_t stream, double *a, const double *b, int *indices, int blk_size, int n)
 {
     // reorder j and k in a[i,j,k] with indicies
     int ntile = (n + THREADS - 1) / THREADS;
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ntile, ntile, blk_size);
     _take_last2d<<<blocks, threads, 0, stream>>>(a, b, indices, n);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;
 }
 
-int takebak(cudaStream_t stream, double *out, double *a_h, int *indices,
+int takebak(hipStream_t stream, double *out, double *a_h, int *indices,
             int count, int n_o, int n_a)
 {
     double *a_d;
-    cudaError_t err;
-    err = cudaHostGetDevicePointer(&a_d, a_h, 0); // zero-copy check
-    if (err != cudaSuccess) {
+    hipError_t err;
+    err = hipHostGetDevicePointer(&a_d, a_h, 0); // zero-copy check
+    if (err != hipSuccess) {
         return 1;
     }
 
@@ -86,8 +88,8 @@ int takebak(cudaStream_t stream, double *out, double *a_h, int *indices,
     dim3 threads(THREADS*THREADS);
     dim3 blocks(ntile, ncount);
     _takebak<<<blocks, threads, 0, stream>>>(out, a_d, indices, count, n_o, n_a);
-    err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

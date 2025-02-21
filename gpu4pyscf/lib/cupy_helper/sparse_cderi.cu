@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -100,8 +102,8 @@ int unpack_block(CDERI_BLOCK *block, int p1, int p2, int nao, double *buf){
 
     _unpack<<<blocks, threads>>>(*block, nao, p1, buf);
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

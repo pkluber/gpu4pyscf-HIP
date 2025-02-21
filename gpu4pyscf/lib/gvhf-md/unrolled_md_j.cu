@@ -1,5 +1,6 @@
+#include "hip/hip_runtime.h"
 #include <stdio.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include "gvhf-rys/vhf.cuh"
 #include "gvhf-rys/gamma_inc_unrolled.cu"
 
@@ -5071,14 +5072,14 @@ int md_j_unrolled(RysIntEnvVars *envs, JKMatrix *jk, BoundsInfo *bounds,
 
 void set_md_j_unrolled_shm_size()
 {
-    cudaFuncSetAttribute(md_j_0_0, cudaFuncAttributeMaxDynamicSharedMemorySize, 3584*sizeof(double));
-    cudaFuncSetAttribute(md_j_1_0, cudaFuncAttributeMaxDynamicSharedMemorySize, 5376*sizeof(double));
-    cudaFuncSetAttribute(md_j_1_1, cudaFuncAttributeMaxDynamicSharedMemorySize, 7168*sizeof(double));
-    cudaFuncSetAttribute(md_j_1_2, cudaFuncAttributeMaxDynamicSharedMemorySize, 7424*sizeof(double));
-    cudaFuncSetAttribute(md_j_2_0, cudaFuncAttributeMaxDynamicSharedMemorySize, 8704*sizeof(double));
-    cudaFuncSetAttribute(md_j_2_1, cudaFuncAttributeMaxDynamicSharedMemorySize, 8960*sizeof(double));
-    cudaFuncSetAttribute(md_j_2_2, cudaFuncAttributeMaxDynamicSharedMemorySize, 9216*sizeof(double));
-    cudaFuncSetAttribute(md_j_3_0, cudaFuncAttributeMaxDynamicSharedMemorySize, 8448*sizeof(double));
-    cudaFuncSetAttribute(md_j_3_1, cudaFuncAttributeMaxDynamicSharedMemorySize, 7424*sizeof(double));
-    cudaFuncSetAttribute(md_j_4_0, cudaFuncAttributeMaxDynamicSharedMemorySize, 7808*sizeof(double));
+    hipFuncSetAttribute(md_j_0_0, hipFuncAttributeMaxDynamicSharedMemorySize, 3584*sizeof(double));
+    hipFuncSetAttribute(md_j_1_0, hipFuncAttributeMaxDynamicSharedMemorySize, 5376*sizeof(double));
+    hipFuncSetAttribute(md_j_1_1, hipFuncAttributeMaxDynamicSharedMemorySize, 7168*sizeof(double));
+    hipFuncSetAttribute(md_j_1_2, hipFuncAttributeMaxDynamicSharedMemorySize, 7424*sizeof(double));
+    hipFuncSetAttribute(md_j_2_0, hipFuncAttributeMaxDynamicSharedMemorySize, 8704*sizeof(double));
+    hipFuncSetAttribute(md_j_2_1, hipFuncAttributeMaxDynamicSharedMemorySize, 8960*sizeof(double));
+    hipFuncSetAttribute(md_j_2_2, hipFuncAttributeMaxDynamicSharedMemorySize, 9216*sizeof(double));
+    hipFuncSetAttribute(md_j_3_0, hipFuncAttributeMaxDynamicSharedMemorySize, 8448*sizeof(double));
+    hipFuncSetAttribute(md_j_3_1, hipFuncAttributeMaxDynamicSharedMemorySize, 7424*sizeof(double));
+    hipFuncSetAttribute(md_j_4_0, hipFuncAttributeMaxDynamicSharedMemorySize, 7808*sizeof(double));
 }

@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -20,7 +21,7 @@
 #include <string.h>
 #include <assert.h>
 #include <dlfcn.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include "libxc.h"
 #include "gint/cuda_alloc.cuh"
 
@@ -70,123 +71,123 @@ extern "C" {
 
 __host__
 void _memset_lda(xc_lda_out_params *out, int order, int np, const xc_dimensions *dim){
-    if(order >= 0) cudaMemset(out->zk, 0, sizeof(double)*np*dim->zk);
-    if(order >= 1) cudaMemset(out->vrho, 0, sizeof(double)*np*dim->vrho);
-    if(order >= 2) cudaMemset(out->v2rho2, 0, sizeof(double)*np*dim->v2rho2);
-    if(order >= 3) cudaMemset(out->v3rho3, 0, sizeof(double)*np*dim->v3rho3);
-    if(order >= 4) cudaMemset(out->v4rho4, 0, sizeof(double)*np*dim->v4rho4);
+    if(order >= 0) hipMemset(out->zk, 0, sizeof(double)*np*dim->zk);
+    if(order >= 1) hipMemset(out->vrho, 0, sizeof(double)*np*dim->vrho);
+    if(order >= 2) hipMemset(out->v2rho2, 0, sizeof(double)*np*dim->v2rho2);
+    if(order >= 3) hipMemset(out->v3rho3, 0, sizeof(double)*np*dim->v3rho3);
+    if(order >= 4) hipMemset(out->v4rho4, 0, sizeof(double)*np*dim->v4rho4);
 }
 
 __host__
 void _memset_gga(xc_gga_out_params *out, int order, int np, const xc_dimensions *dim){
-    if(order >= 0) cudaMemset(out->zk, 0, sizeof(double)*np*dim->zk);
+    if(order >= 0) hipMemset(out->zk, 0, sizeof(double)*np*dim->zk);
     if(order >= 1) {
-        cudaMemset(out->vrho, 0, sizeof(double)*np*dim->vrho);
-        cudaMemset(out->vsigma, 0, sizeof(double)*np*dim->vsigma); // (sigma, lapl, tau)
+        hipMemset(out->vrho, 0, sizeof(double)*np*dim->vrho);
+        hipMemset(out->vsigma, 0, sizeof(double)*np*dim->vsigma); // (sigma, lapl, tau)
     }
     if(order >= 2) {
-        cudaMemset(out->v2rho2, 0, sizeof(double)*np*dim->v2rho2);
-        cudaMemset(out->v2rhosigma, 0, sizeof(double)*np*dim->v2rhosigma);
-        cudaMemset(out->v2sigma2, 0, sizeof(double)*np*dim->v2sigma2);
+        hipMemset(out->v2rho2, 0, sizeof(double)*np*dim->v2rho2);
+        hipMemset(out->v2rhosigma, 0, sizeof(double)*np*dim->v2rhosigma);
+        hipMemset(out->v2sigma2, 0, sizeof(double)*np*dim->v2sigma2);
     }
     if(order >= 3) {
-        cudaMemset(out->v3rho3,       0, sizeof(double)*np*dim->v3rho3);
-        cudaMemset(out->v3rho2sigma,  0, sizeof(double)*np*dim->v3rho2sigma);
-        cudaMemset(out->v3rhosigma2,  0, sizeof(double)*np*dim->v3rhosigma2);
-        cudaMemset(out->v3sigma3,     0, sizeof(double)*np*dim->v3sigma3);
+        hipMemset(out->v3rho3,       0, sizeof(double)*np*dim->v3rho3);
+        hipMemset(out->v3rho2sigma,  0, sizeof(double)*np*dim->v3rho2sigma);
+        hipMemset(out->v3rhosigma2,  0, sizeof(double)*np*dim->v3rhosigma2);
+        hipMemset(out->v3sigma3,     0, sizeof(double)*np*dim->v3sigma3);
     }
     if(order >= 4) {
-        cudaMemset(out->v4rho4,       0, sizeof(double)*np*dim->v4rho4);
-        cudaMemset(out->v4rho3sigma,  0, sizeof(double)*np*dim->v4rho3sigma);
-        cudaMemset(out->v4rho2sigma2, 0, sizeof(double)*np*dim->v4rho2sigma2);
-        cudaMemset(out->v4rhosigma3,  0, sizeof(double)*np*dim->v4rhosigma3);
-        cudaMemset(out->v4sigma4,     0, sizeof(double)*np*dim->v4sigma4);
+        hipMemset(out->v4rho4,       0, sizeof(double)*np*dim->v4rho4);
+        hipMemset(out->v4rho3sigma,  0, sizeof(double)*np*dim->v4rho3sigma);
+        hipMemset(out->v4rho2sigma2, 0, sizeof(double)*np*dim->v4rho2sigma2);
+        hipMemset(out->v4rhosigma3,  0, sizeof(double)*np*dim->v4rhosigma3);
+        hipMemset(out->v4sigma4,     0, sizeof(double)*np*dim->v4sigma4);
     }
 }
 
 __host__
 void _memset_mgga(xc_mgga_out_params *out, int order, int np, const xc_dimensions *dim){
-    if(order >= 0) cudaMemset(out->zk, 0, sizeof(double)*np*dim->zk);
+    if(order >= 0) hipMemset(out->zk, 0, sizeof(double)*np*dim->zk);
 
     if(order >= 1) {
-        cudaMemset(out->vrho, 0, sizeof(double)*np*dim->vrho);
-        cudaMemset(out->vsigma, 0, sizeof(double)*np*dim->vsigma);
-        cudaMemset(out->vtau, 0, sizeof(double)*np*dim->vtau);
-        if(out->vlapl != NULL) cudaMemset(out->vlapl, 0, sizeof(double)*np*dim->vlapl); // (sigma, lapl, tau)
+        hipMemset(out->vrho, 0, sizeof(double)*np*dim->vrho);
+        hipMemset(out->vsigma, 0, sizeof(double)*np*dim->vsigma);
+        hipMemset(out->vtau, 0, sizeof(double)*np*dim->vtau);
+        if(out->vlapl != NULL) hipMemset(out->vlapl, 0, sizeof(double)*np*dim->vlapl); // (sigma, lapl, tau)
     }
 
     if(order >= 2) {
-        cudaMemset(out->v2rho2, 0, sizeof(double)*np*dim->v2rho2);
-        cudaMemset(out->v2rhosigma, 0, sizeof(double)*np*dim->v2rhosigma);
-        cudaMemset(out->v2rhotau, 0, sizeof(double)*np*dim->v2rhotau);
-        cudaMemset(out->v2sigma2, 0, sizeof(double)*np*dim->v2sigma2);
-        cudaMemset(out->v2sigmatau, 0, sizeof(double)*np*dim->v2sigmatau);
-        cudaMemset(out->v2tau2, 0, sizeof(double)*np*dim->v2tau2);
-        if(out->v2rholapl != NULL) cudaMemset(out->v2rholapl, 0, sizeof(double)*np*dim->v2rholapl);
-        if(out->v2sigmalapl != NULL) cudaMemset(out->v2sigmalapl, 0, sizeof(double)*np*dim->v2sigmalapl);
-        if(out->v2lapl2 != NULL) cudaMemset(out->v2lapl2, 0, sizeof(double)*np*dim->v2lapl2);
-        if(out->v2lapltau != NULL) cudaMemset(out->v2lapltau, 0, sizeof(double)*np*dim->v2lapltau);
+        hipMemset(out->v2rho2, 0, sizeof(double)*np*dim->v2rho2);
+        hipMemset(out->v2rhosigma, 0, sizeof(double)*np*dim->v2rhosigma);
+        hipMemset(out->v2rhotau, 0, sizeof(double)*np*dim->v2rhotau);
+        hipMemset(out->v2sigma2, 0, sizeof(double)*np*dim->v2sigma2);
+        hipMemset(out->v2sigmatau, 0, sizeof(double)*np*dim->v2sigmatau);
+        hipMemset(out->v2tau2, 0, sizeof(double)*np*dim->v2tau2);
+        if(out->v2rholapl != NULL) hipMemset(out->v2rholapl, 0, sizeof(double)*np*dim->v2rholapl);
+        if(out->v2sigmalapl != NULL) hipMemset(out->v2sigmalapl, 0, sizeof(double)*np*dim->v2sigmalapl);
+        if(out->v2lapl2 != NULL) hipMemset(out->v2lapl2, 0, sizeof(double)*np*dim->v2lapl2);
+        if(out->v2lapltau != NULL) hipMemset(out->v2lapltau, 0, sizeof(double)*np*dim->v2lapltau);
     }
 
     if (order >= 3) {
-        cudaMemset(out->v3rho3        , 0, sizeof(double)*np*dim->v3rho3);
-        cudaMemset(out->v3rho2sigma   , 0, sizeof(double)*np*dim->v3rho2sigma);
-        cudaMemset(out->v3rho2tau     , 0, sizeof(double)*np*dim->v3rho2tau);
-        cudaMemset(out->v3rhosigma2   , 0, sizeof(double)*np*dim->v3rhosigma2);
-        cudaMemset(out->v3rhosigmatau , 0, sizeof(double)*np*dim->v3rhosigmatau);
-        cudaMemset(out->v3rhotau2     , 0, sizeof(double)*np*dim->v3rhotau2);
-        cudaMemset(out->v3sigma3      , 0, sizeof(double)*np*dim->v3sigma3);
-        cudaMemset(out->v3sigma2tau   , 0, sizeof(double)*np*dim->v3sigma2tau);
-        cudaMemset(out->v3sigmatau2   , 0, sizeof(double)*np*dim->v3sigmatau2);
-        cudaMemset(out->v3tau3        , 0, sizeof(double)*np*dim->v3tau3);
-        if (out->v3rho2lapl    != NULL) cudaMemset(out->v3rho2lapl    , 0, sizeof(double)*np*dim->v3rho2lapl);
-        if (out->v3rhosigmalapl!= NULL) cudaMemset(out->v3rhosigmalapl, 0, sizeof(double)*np*dim->v3rhosigmalapl);
-        if (out->v3rholapl2    != NULL) cudaMemset(out->v3rholapl2    , 0, sizeof(double)*np*dim->v3rholapl2);
-        if (out->v3rholapltau  != NULL) cudaMemset(out->v3rholapltau  , 0, sizeof(double)*np*dim->v3rholapltau);
-        if (out->v3sigma2lapl  != NULL) cudaMemset(out->v3sigma2lapl  , 0, sizeof(double)*np*dim->v3sigma2lapl);
-        if (out->v3sigmalapl2  != NULL) cudaMemset(out->v3sigmalapl2  , 0, sizeof(double)*np*dim->v3sigmalapl2);
-        if (out->v3sigmalapltau!= NULL) cudaMemset(out->v3sigmalapltau, 0, sizeof(double)*np*dim->v3sigmalapltau);
-        if (out->v3lapl3       != NULL) cudaMemset(out->v3lapl3       , 0, sizeof(double)*np*dim->v3lapl3);
-        if (out->v3lapl2tau    != NULL) cudaMemset(out->v3lapl2tau    , 0, sizeof(double)*np*dim->v3lapl2tau);
-        if (out->v3lapltau2    != NULL) cudaMemset(out->v3lapltau2    , 0, sizeof(double)*np*dim->v3lapltau2);
+        hipMemset(out->v3rho3        , 0, sizeof(double)*np*dim->v3rho3);
+        hipMemset(out->v3rho2sigma   , 0, sizeof(double)*np*dim->v3rho2sigma);
+        hipMemset(out->v3rho2tau     , 0, sizeof(double)*np*dim->v3rho2tau);
+        hipMemset(out->v3rhosigma2   , 0, sizeof(double)*np*dim->v3rhosigma2);
+        hipMemset(out->v3rhosigmatau , 0, sizeof(double)*np*dim->v3rhosigmatau);
+        hipMemset(out->v3rhotau2     , 0, sizeof(double)*np*dim->v3rhotau2);
+        hipMemset(out->v3sigma3      , 0, sizeof(double)*np*dim->v3sigma3);
+        hipMemset(out->v3sigma2tau   , 0, sizeof(double)*np*dim->v3sigma2tau);
+        hipMemset(out->v3sigmatau2   , 0, sizeof(double)*np*dim->v3sigmatau2);
+        hipMemset(out->v3tau3        , 0, sizeof(double)*np*dim->v3tau3);
+        if (out->v3rho2lapl    != NULL) hipMemset(out->v3rho2lapl    , 0, sizeof(double)*np*dim->v3rho2lapl);
+        if (out->v3rhosigmalapl!= NULL) hipMemset(out->v3rhosigmalapl, 0, sizeof(double)*np*dim->v3rhosigmalapl);
+        if (out->v3rholapl2    != NULL) hipMemset(out->v3rholapl2    , 0, sizeof(double)*np*dim->v3rholapl2);
+        if (out->v3rholapltau  != NULL) hipMemset(out->v3rholapltau  , 0, sizeof(double)*np*dim->v3rholapltau);
+        if (out->v3sigma2lapl  != NULL) hipMemset(out->v3sigma2lapl  , 0, sizeof(double)*np*dim->v3sigma2lapl);
+        if (out->v3sigmalapl2  != NULL) hipMemset(out->v3sigmalapl2  , 0, sizeof(double)*np*dim->v3sigmalapl2);
+        if (out->v3sigmalapltau!= NULL) hipMemset(out->v3sigmalapltau, 0, sizeof(double)*np*dim->v3sigmalapltau);
+        if (out->v3lapl3       != NULL) hipMemset(out->v3lapl3       , 0, sizeof(double)*np*dim->v3lapl3);
+        if (out->v3lapl2tau    != NULL) hipMemset(out->v3lapl2tau    , 0, sizeof(double)*np*dim->v3lapl2tau);
+        if (out->v3lapltau2    != NULL) hipMemset(out->v3lapltau2    , 0, sizeof(double)*np*dim->v3lapltau2);
     }
 
     if (order >= 4) {
-        cudaMemset(out->v4rho4           , 0, sizeof(double)*np*dim->v4rho4);
-        cudaMemset(out->v4rho3sigma      , 0, sizeof(double)*np*dim->v4rho3sigma);
-        cudaMemset(out->v4rho3tau        , 0, sizeof(double)*np*dim->v4rho3tau);
-        cudaMemset(out->v4rho2sigma2     , 0, sizeof(double)*np*dim->v4rho2sigma2);
-        cudaMemset(out->v4rho2sigmatau   , 0, sizeof(double)*np*dim->v4rho2sigmatau);
-        cudaMemset(out->v4rho2tau2       , 0, sizeof(double)*np*dim->v4rho2tau2);
-        cudaMemset(out->v4rhosigma3      , 0, sizeof(double)*np*dim->v4rhosigma3);
-        cudaMemset(out->v4rhosigma2tau   , 0, sizeof(double)*np*dim->v4rhosigma2tau);
-        cudaMemset(out->v4rhosigmatau2   , 0, sizeof(double)*np*dim->v4rhosigmatau2);
-        cudaMemset(out->v4rhotau3        , 0, sizeof(double)*np*dim->v4rhotau3);
-        cudaMemset(out->v4sigma4         , 0, sizeof(double)*np*dim->v4sigma4);
-        cudaMemset(out->v4sigma3tau      , 0, sizeof(double)*np*dim->v4sigma3tau);
-        cudaMemset(out->v4sigma2tau2     , 0, sizeof(double)*np*dim->v4sigma2tau2);
-        cudaMemset(out->v4sigmatau3      , 0, sizeof(double)*np*dim->v4sigmatau3);
-        cudaMemset(out->v4tau4           , 0, sizeof(double)*np*dim->v4tau4);
-        if (out->v4rho3lapl       != NULL) cudaMemset(out->v4rho3lapl       , 0, sizeof(double)*np*dim->v4rho3lapl);
-        if (out->v4rho2sigmalapl  != NULL) cudaMemset(out->v4rho2sigmalapl  , 0, sizeof(double)*np*dim->v4rho2sigmalapl);
-        if (out->v4rho2lapl2      != NULL) cudaMemset(out->v4rho2lapl2      , 0, sizeof(double)*np*dim->v4rho2lapl2);
-        if (out->v4rho2lapltau    != NULL) cudaMemset(out->v4rho2lapltau    , 0, sizeof(double)*np*dim->v4rho2lapltau);
-        if (out->v4rhosigma2lapl  != NULL) cudaMemset(out->v4rhosigma2lapl  , 0, sizeof(double)*np*dim->v4rhosigma2lapl);
-        if (out->v4rhosigmalapl2  != NULL) cudaMemset(out->v4rhosigmalapl2  , 0, sizeof(double)*np*dim->v4rhosigmalapl2);
-        if (out->v4rhosigmalapltau!= NULL) cudaMemset(out->v4rhosigmalapltau, 0, sizeof(double)*np*dim->v4rhosigmalapltau);
-        if (out->v4rholapl3       != NULL) cudaMemset(out->v4rholapl3       , 0, sizeof(double)*np*dim->v4rholapl3);
-        if (out->v4rholapl2tau    != NULL) cudaMemset(out->v4rholapl2tau    , 0, sizeof(double)*np*dim->v4rholapl2tau);
-        if (out->v4rholapltau2    != NULL) cudaMemset(out->v4rholapltau2    , 0, sizeof(double)*np*dim->v4rholapltau2);
-        if (out->v4sigma3lapl     != NULL) cudaMemset(out->v4sigma3lapl     , 0, sizeof(double)*np*dim->v4sigma3lapl);
-        if (out->v4sigma2lapl2    != NULL) cudaMemset(out->v4sigma2lapl2    , 0, sizeof(double)*np*dim->v4sigma2lapl2);
-        if (out->v4sigma2lapltau  != NULL) cudaMemset(out->v4sigma2lapltau  , 0, sizeof(double)*np*dim->v4sigma2lapltau);
-        if (out->v4sigmalapl3     != NULL) cudaMemset(out->v4sigmalapl3     , 0, sizeof(double)*np*dim->v4sigmalapl3);
-        if (out->v4sigmalapl2tau  != NULL) cudaMemset(out->v4sigmalapl2tau  , 0, sizeof(double)*np*dim->v4sigmalapl2tau);
-        if (out->v4sigmalapltau2  != NULL) cudaMemset(out->v4sigmalapltau2  , 0, sizeof(double)*np*dim->v4sigmalapltau2);
-        if (out->v4lapl4          != NULL) cudaMemset(out->v4lapl4          , 0, sizeof(double)*np*dim->v4lapl4);
-        if (out->v4lapl3tau       != NULL) cudaMemset(out->v4lapl3tau       , 0, sizeof(double)*np*dim->v4lapl3tau);
-        if (out->v4lapl2tau2      != NULL) cudaMemset(out->v4lapl2tau2      , 0, sizeof(double)*np*dim->v4lapl2tau2);
-        if (out->v4lapltau3       != NULL) cudaMemset(out->v4lapltau3       , 0, sizeof(double)*np*dim->v4lapltau3);
+        hipMemset(out->v4rho4           , 0, sizeof(double)*np*dim->v4rho4);
+        hipMemset(out->v4rho3sigma      , 0, sizeof(double)*np*dim->v4rho3sigma);
+        hipMemset(out->v4rho3tau        , 0, sizeof(double)*np*dim->v4rho3tau);
+        hipMemset(out->v4rho2sigma2     , 0, sizeof(double)*np*dim->v4rho2sigma2);
+        hipMemset(out->v4rho2sigmatau   , 0, sizeof(double)*np*dim->v4rho2sigmatau);
+        hipMemset(out->v4rho2tau2       , 0, sizeof(double)*np*dim->v4rho2tau2);
+        hipMemset(out->v4rhosigma3      , 0, sizeof(double)*np*dim->v4rhosigma3);
+        hipMemset(out->v4rhosigma2tau   , 0, sizeof(double)*np*dim->v4rhosigma2tau);
+        hipMemset(out->v4rhosigmatau2   , 0, sizeof(double)*np*dim->v4rhosigmatau2);
+        hipMemset(out->v4rhotau3        , 0, sizeof(double)*np*dim->v4rhotau3);
+        hipMemset(out->v4sigma4         , 0, sizeof(double)*np*dim->v4sigma4);
+        hipMemset(out->v4sigma3tau      , 0, sizeof(double)*np*dim->v4sigma3tau);
+        hipMemset(out->v4sigma2tau2     , 0, sizeof(double)*np*dim->v4sigma2tau2);
+        hipMemset(out->v4sigmatau3      , 0, sizeof(double)*np*dim->v4sigmatau3);
+        hipMemset(out->v4tau4           , 0, sizeof(double)*np*dim->v4tau4);
+        if (out->v4rho3lapl       != NULL) hipMemset(out->v4rho3lapl       , 0, sizeof(double)*np*dim->v4rho3lapl);
+        if (out->v4rho2sigmalapl  != NULL) hipMemset(out->v4rho2sigmalapl  , 0, sizeof(double)*np*dim->v4rho2sigmalapl);
+        if (out->v4rho2lapl2      != NULL) hipMemset(out->v4rho2lapl2      , 0, sizeof(double)*np*dim->v4rho2lapl2);
+        if (out->v4rho2lapltau    != NULL) hipMemset(out->v4rho2lapltau    , 0, sizeof(double)*np*dim->v4rho2lapltau);
+        if (out->v4rhosigma2lapl  != NULL) hipMemset(out->v4rhosigma2lapl  , 0, sizeof(double)*np*dim->v4rhosigma2lapl);
+        if (out->v4rhosigmalapl2  != NULL) hipMemset(out->v4rhosigmalapl2  , 0, sizeof(double)*np*dim->v4rhosigmalapl2);
+        if (out->v4rhosigmalapltau!= NULL) hipMemset(out->v4rhosigmalapltau, 0, sizeof(double)*np*dim->v4rhosigmalapltau);
+        if (out->v4rholapl3       != NULL) hipMemset(out->v4rholapl3       , 0, sizeof(double)*np*dim->v4rholapl3);
+        if (out->v4rholapl2tau    != NULL) hipMemset(out->v4rholapl2tau    , 0, sizeof(double)*np*dim->v4rholapl2tau);
+        if (out->v4rholapltau2    != NULL) hipMemset(out->v4rholapltau2    , 0, sizeof(double)*np*dim->v4rholapltau2);
+        if (out->v4sigma3lapl     != NULL) hipMemset(out->v4sigma3lapl     , 0, sizeof(double)*np*dim->v4sigma3lapl);
+        if (out->v4sigma2lapl2    != NULL) hipMemset(out->v4sigma2lapl2    , 0, sizeof(double)*np*dim->v4sigma2lapl2);
+        if (out->v4sigma2lapltau  != NULL) hipMemset(out->v4sigma2lapltau  , 0, sizeof(double)*np*dim->v4sigma2lapltau);
+        if (out->v4sigmalapl3     != NULL) hipMemset(out->v4sigmalapl3     , 0, sizeof(double)*np*dim->v4sigmalapl3);
+        if (out->v4sigmalapl2tau  != NULL) hipMemset(out->v4sigmalapl2tau  , 0, sizeof(double)*np*dim->v4sigmalapl2tau);
+        if (out->v4sigmalapltau2  != NULL) hipMemset(out->v4sigmalapltau2  , 0, sizeof(double)*np*dim->v4sigmalapltau2);
+        if (out->v4lapl4          != NULL) hipMemset(out->v4lapl4          , 0, sizeof(double)*np*dim->v4lapl4);
+        if (out->v4lapl3tau       != NULL) hipMemset(out->v4lapl3tau       , 0, sizeof(double)*np*dim->v4lapl3tau);
+        if (out->v4lapl2tau2      != NULL) hipMemset(out->v4lapl2tau2      , 0, sizeof(double)*np*dim->v4lapl2tau2);
+        if (out->v4lapltau3       != NULL) hipMemset(out->v4lapltau3       , 0, sizeof(double)*np*dim->v4lapltau3);
     }
 }
 
@@ -214,9 +215,9 @@ int _xc_lda(const xc_func_type *func, int np, int order, const double *rho,
                 func->info->lda->pol[order](func, np, rho, out);
         }
     }
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of xc lda: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of xc lda: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -239,9 +240,9 @@ int _xc_gga(const xc_func_type *func, int np, int order, const double *rho, cons
     _memset_gga(out, order, np, dim);
     //FREE(dim);
     
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of memset_gga: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of memset_gga: %s\n", hipGetErrorString(err));
         return 1;
     }
 
@@ -255,9 +256,9 @@ int _xc_gga(const xc_func_type *func, int np, int order, const double *rho, cons
                 func->info->gga->pol[order](func, np, rho, sigma, out);
         }
     }
-    err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of xc_gga: %s\n", cudaGetErrorString(err));
+    err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of xc_gga: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -280,9 +281,9 @@ int _xc_mgga(const xc_func_type *func, int np, int order, const double *rho, con
     _memset_mgga(out, order, np, dim);
     //FREE(dim);
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of memset mgga: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of memset mgga: %s\n", hipGetErrorString(err));
         return 1;
     }
 
@@ -296,16 +297,16 @@ int _xc_mgga(const xc_func_type *func, int np, int order, const double *rho, con
                 func->info->mgga->pol[order](func, np, rho, sigma, lapl, tau, out);
         }
     }
-    err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of xc mgga: %s\n", cudaGetErrorString(err));
+    err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of xc mgga: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
 __host__
-int GDFT_xc_lda(cudaStream_t stream,
+int GDFT_xc_lda(hipStream_t stream,
     const xc_func_type *func, int np, const double *rho,
     xc_lda_out_params *out, xc_lda_out_params *buf)
 {
@@ -357,7 +358,7 @@ int GDFT_xc_lda(cudaStream_t stream,
 }
 
 __host__
-int GDFT_xc_gga(cudaStream_t stream,
+int GDFT_xc_gga(hipStream_t stream,
     const xc_func_type *func, int np, const double *rho, const double *sigma,
     xc_gga_out_params *out, xc_gga_out_params *buf)
 {
@@ -413,7 +414,7 @@ int GDFT_xc_gga(cudaStream_t stream,
 }
 
 __host__
-int GDFT_xc_mgga(cudaStream_t stream,
+int GDFT_xc_mgga(hipStream_t stream,
         const xc_func_type *func, int np,
         const double *rho, const double *sigma, const double *lapl, const double *tau,
         xc_mgga_out_params *out, xc_mgga_out_params *buf)

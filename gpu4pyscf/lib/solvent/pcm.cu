@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include <stdio.h>
 
 #define THREADS        32
@@ -252,7 +254,7 @@ static void _pcm_d2F_to_d2Sii(const double* F, const double* dF, const double* d
 }
 
 extern "C" {
-int pcm_d_s(cudaStream_t stream, double *matrix_d, double *matrix_s,
+int pcm_d_s(hipStream_t stream, double *matrix_d, double *matrix_s,
                     const double *coords, const double *norm_vec, const double *r_vdw,
                     const double *charge_exp, const double *switch_fun,
                     int n)
@@ -262,14 +264,14 @@ int pcm_d_s(cudaStream_t stream, double *matrix_d, double *matrix_s,
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ntilex, ntiley);
     _pcm_d_s<<<blocks, threads, 0, stream>>>(matrix_d, matrix_s, coords, norm_vec, r_vdw, charge_exp, switch_fun, n);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;
 }
 
-int pcm_dd_ds(cudaStream_t stream, double *matrix_dD, double *matrix_dS,
+int pcm_dd_ds(hipStream_t stream, double *matrix_dD, double *matrix_dS,
               const double *coords, const double *norm_vec,
               const double *charge_exp,
               int n)
@@ -279,14 +281,14 @@ int pcm_dd_ds(cudaStream_t stream, double *matrix_dD, double *matrix_dS,
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ntilex, ntiley);
     _pcm_dD_dS<<<blocks, threads, 0, stream>>>(matrix_dD, matrix_dS, coords, norm_vec, charge_exp, n);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;
 }
 
-int pcm_d2d_d2s(cudaStream_t stream, double *matrix_d2D, double *matrix_d2S,
+int pcm_d2d_d2s(hipStream_t stream, double *matrix_d2D, double *matrix_d2S,
                 const double *coords, const double *norm_vec,
                 const double *charge_exp,
                 int n)
@@ -296,14 +298,14 @@ int pcm_d2d_d2s(cudaStream_t stream, double *matrix_d2D, double *matrix_d2S,
     const dim3 threads(THREADS, THREADS);
     const dim3 blocks(ntilex, ntiley);
     _pcm_d2D_d2S<<<blocks, threads, 0, stream>>>(matrix_d2D, matrix_d2S, coords, norm_vec, charge_exp, n);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;
 }
 
-int pcm_d2f_to_d2sii(cudaStream_t stream, const double* F, const double* dF, const double* d2F, const double* charge_exp,
+int pcm_d2f_to_d2sii(hipStream_t stream, const double* F, const double* dF, const double* d2F, const double* charge_exp,
                      double* d2Sii, const int n_atom, const int n_grid)
 {
     const int ntilex = (n_grid + THREADS - 1) / THREADS;
@@ -311,8 +313,8 @@ int pcm_d2f_to_d2sii(cudaStream_t stream, const double* F, const double* dF, con
     const dim3 threads(THREADS, THREADS);
     const dim3 blocks(ntilex, ntiley);
     _pcm_d2F_to_d2Sii<<<blocks, threads, 0, stream>>>(F, dF, d2F, charge_exp, d2Sii, n_atom, n_grid);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

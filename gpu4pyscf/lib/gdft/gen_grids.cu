@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -17,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #define NATOM_PER_BLOCK        128
 
@@ -152,22 +153,22 @@ void GDFTgroup_grids_kernel(int* group_ids, const double* atom_coords, const dou
 
 extern "C"{
 __host__
-int GDFTgen_grid_partition(cudaStream_t stream, double *pbecke,
+int GDFTgen_grid_partition(hipStream_t stream, double *pbecke,
 const double *coords, const double *atm_coords, const double *a, int ngrids, int natm)
 {
     dim3 threads(NATOM_PER_BLOCK);
     dim3 blocks((ngrids+NATOM_PER_BLOCK-1)/NATOM_PER_BLOCK);
     GDFTgen_grid_kernel<<<blocks, threads, 0, stream>>>(pbecke, coords, atm_coords, a, ngrids, natm);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess){
-        fprintf(stderr, "CUDA Error of gen grids: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess){
+        fprintf(stderr, "CUDA Error of gen grids: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
     }
 
 __host__
-int GDFTgroup_grids(cudaStream_t stream, int* group_ids, const double* atom_coords, const double* coords,
+int GDFTgroup_grids(hipStream_t stream, int* group_ids, const double* atom_coords, const double* coords,
     int natm, int ngrids){
     if (ngrids % NATOM_PER_BLOCK != 0){
         fprintf(stderr, "CUDA Error of gen grids: grids alignment must be %d.", NATOM_PER_BLOCK);
@@ -176,9 +177,9 @@ int GDFTgroup_grids(cudaStream_t stream, int* group_ids, const double* atom_coor
     dim3 threads(NATOM_PER_BLOCK);
     dim3 blocks((ngrids+NATOM_PER_BLOCK-1)/NATOM_PER_BLOCK);
     GDFTgroup_grids_kernel<<<blocks, threads, 0, stream>>>(group_ids, atom_coords, coords, natm, ngrids);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess){
-        fprintf(stderr, "CUDA Error of group grids: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess){
+        fprintf(stderr, "CUDA Error of group grids: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;

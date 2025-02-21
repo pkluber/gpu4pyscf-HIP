@@ -113,9 +113,9 @@ static int GINTrun_tasks_ip1_jk(JKMatrix *jk,
 
   }
 
-  cudaError_t err = cudaGetLastError();
-  if (err != cudaSuccess) {
-    fprintf(stderr, "CUDA Error of GINTint2e_ip1_jk_kernel: %s\n", cudaGetErrorString(err));
+  hipError_t err = hipGetLastError();
+  if (err != hipSuccess) {
+    fprintf(stderr, "CUDA Error of GINTint2e_ip1_jk_kernel: %s\n", hipGetErrorString(err));
     return 1;
   }
   return 0;
@@ -154,7 +154,7 @@ int GINTbuild_ip1_jk(BasisProdCache *bpcache,
       DEVICE_INIT(int16_t, d_idx4c, idx4c, envs.nf * 3);
       envs.idx = d_idx4c;
     } else {
-      checkCudaErrors(cudaMemcpyToSymbol(c_idx4c, idx4c, sizeof(int16_t)*envs.nf*3));
+      checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_idx4c), idx4c, sizeof(int16_t)*envs.nf*3));
     }
     free(idx4c);
     free(idx_ij);
@@ -167,9 +167,9 @@ int GINTbuild_ip1_jk(BasisProdCache *bpcache,
   assert(nao < 32768);
   envs.nao = nao;
 
-//  checkCudaErrors(cudaMemcpyToSymbol(c_envs, &envs, sizeof(GINTEnvVars)));
+//  checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_envs), &envs, sizeof(GINTEnvVars)));
   // move bpcache to constant memory
-  checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+  checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
   JKMatrix jk;
   jk.n_dm = n_dm;

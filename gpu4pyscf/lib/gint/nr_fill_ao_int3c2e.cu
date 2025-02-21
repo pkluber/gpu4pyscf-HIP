@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gint.h"
 #include "config.h"
@@ -33,7 +33,7 @@
 #include "g2e_root3.cu"
 #include "g3c2e.cu"
 
-static int GINTfill_int3c2e_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, cudaStream_t stream)
+static int GINTfill_int3c2e_tasks(ERITensor *eri, BasisProdOffsets *offsets, GINTEnvVars *envs, hipStream_t stream)
 {
     int nrys_roots = envs->nrys_roots;
     int ntasks_ij = offsets->ntasks_ij;
@@ -104,16 +104,16 @@ static int GINTfill_int3c2e_tasks(ERITensor *eri, BasisProdOffsets *offsets, GIN
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GINTfill_int3c2e_kernel: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GINTfill_int3c2e_kernel: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
 }
 
 extern "C" {
-int GINTfill_int3c2e(cudaStream_t stream, BasisProdCache *bpcache, double *eri, int nao,
+int GINTfill_int3c2e(hipStream_t stream, BasisProdCache *bpcache, double *eri, int nao,
                    int *strides, int *ao_offsets,
                    int *bins_locs_ij, int *bins_locs_kl, int nbins,
                    int cp_ij_id, int cp_kl_id, double omega)
@@ -130,9 +130,9 @@ int GINTfill_int3c2e(cudaStream_t stream, BasisProdCache *bpcache, double *eri, 
         return 2;
     }
 
-    //checkCudaErrors(cudaMemcpyToSymbol(c_envs, &envs, sizeof(GINTEnvVars)));
+    //checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_envs), &envs, sizeof(GINTEnvVars)));
     // move bpcache to constant memory
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     ERITensor eritensor;
     eritensor.stride_j = strides[1];

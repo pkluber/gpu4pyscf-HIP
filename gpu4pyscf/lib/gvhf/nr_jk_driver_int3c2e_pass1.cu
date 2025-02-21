@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gint/gint.h"
 #include "gint/config.h"
@@ -33,7 +33,7 @@
 #include "g3c2e_pass1.cu"
 
 __host__
-static int GINTrun_tasks_int3c2e_pass1_j(JKMatrix *jk, BasisProdOffsets *offsets, GINTEnvVars *envs, cudaStream_t stream)
+static int GINTrun_tasks_int3c2e_pass1_j(JKMatrix *jk, BasisProdOffsets *offsets, GINTEnvVars *envs, hipStream_t stream)
 {
     int nrys_roots = envs->nrys_roots;
     int ntasks_ij = offsets->ntasks_ij;
@@ -66,9 +66,9 @@ static int GINTrun_tasks_int3c2e_pass1_j(JKMatrix *jk, BasisProdOffsets *offsets
         return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GINTint2e_jk_kernel: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GINTint2e_jk_kernel: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -76,14 +76,14 @@ static int GINTrun_tasks_int3c2e_pass1_j(JKMatrix *jk, BasisProdOffsets *offsets
 
 
 extern "C" { __host__
-int GINTbuild_j_int3c2e_pass1(cudaStream_t stream, BasisProdCache *bpcache,
+int GINTbuild_j_int3c2e_pass1(hipStream_t stream, BasisProdCache *bpcache,
                  double *dm, double *rhoj,
                  int nao, int naux, int n_dm,
                  int *bins_locs_ij, int *bins_locs_kl,
                  int ncp_ij, int ncp_kl)
 {
     // move bpcache to constant memory
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
     int ng[4] = {0,0,0,0};
 
     JKMatrix jk;
@@ -108,8 +108,8 @@ int GINTbuild_j_int3c2e_pass1(cudaStream_t stream, BasisProdCache *bpcache,
         printf("%d, ", idx[i]);
     }
     printf("\n");
-    checkCudaErrors(cudaMemcpyToSymbol(c_idx, idx, sizeof(int) * TOT_NF*3));
-    checkCudaErrors(cudaMemcpyToSymbol(c_l_locs, l_locs, sizeof(int) * (GPU_LMAX + 2)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_idx), idx, sizeof(int) * TOT_NF*3));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_l_locs), l_locs, sizeof(int) * (GPU_LMAX + 2)));
     free(idx);
     free(l_locs);
     */

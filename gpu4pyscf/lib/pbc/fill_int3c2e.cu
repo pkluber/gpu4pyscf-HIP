@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2024-2025 The PySCF Developers. All Rights Reserved.
  *
@@ -17,7 +18,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gvhf-rys/vhf.cuh"
 #include "gvhf-rys/rys_roots.cu"

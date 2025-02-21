@@ -1,3 +1,4 @@
+#include "hip/hip_runtime.h"
 #include "vhf.cuh"
 #include "rys_roots.cu"
 #include "create_tasks_ip1.cu"
@@ -15850,17 +15851,17 @@ int rys_ejk_ip2_type3_unrolled(RysIntEnvVars *envs, JKEnergy *jk, BoundsInfo *bo
         rys_ejk_ip2_type3_1010<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 131:
         buflen += (g_size * 3 + 9) * nsq_per_block;
-        cudaFuncSetAttribute(rys_ejk_ip2_type3_1011, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_ejk_ip2_type3_1011, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_ejk_ip2_type3_1011<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 150:
         rys_ejk_ip2_type3_1100<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 155:
         buflen += (g_size * 3 + 9) * nsq_per_block;
-        cudaFuncSetAttribute(rys_ejk_ip2_type3_1110, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_ejk_ip2_type3_1110, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_ejk_ip2_type3_1110<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     case 156:
         buflen += (g_size * 3 + 9) * nsq_per_block;
-        cudaFuncSetAttribute(rys_ejk_ip2_type3_1111, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_ejk_ip2_type3_1111, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_ejk_ip2_type3_1111<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, dd_pool, batch_head); break;
     default: return 0;
     }

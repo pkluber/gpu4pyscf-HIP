@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 #include <stdio.h>
 
 #define THREADS 128
@@ -273,7 +275,7 @@ static void _cart2sph_ang7(double *cart, double *sph, int stride, int count){
 
 extern "C" {
 __host__
-int cart2sph(cudaStream_t stream, double *cart_gto, double *sph_gto, int stride, int count, int ang)
+int cart2sph(hipStream_t stream, double *cart_gto, double *sph_gto, int stride, int count, int ang)
 {
     dim3 threads(THREADS);
     dim3 blocks((count + THREADS - 1)/THREADS);
@@ -291,8 +293,8 @@ int cart2sph(cudaStream_t stream, double *cart_gto, double *sph_gto, int stride,
             return 1;
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

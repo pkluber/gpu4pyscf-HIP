@@ -1,4 +1,6 @@
-#include <cuda.h>
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
+#include <hip/hip_runtime.h>
 #include "vhf.cuh"
 #include "rys_roots.cu"
 #include "create_tasks.cu"
@@ -20841,7 +20843,7 @@ int rys_jk_unrolled(RysIntEnvVars *envs, JKMatrix *jk, BoundsInfo *bounds,
         rys_jk_2110<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 281:
         buflen += 5184;
-        cudaFuncSetAttribute(rys_jk_2111, cudaFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
+        hipFuncSetAttribute(rys_jk_2111, hipFuncAttributeMaxDynamicSharedMemorySize, buflen*sizeof(double));
         rys_jk_2111<<<workers, threads, buflen*sizeof(double)>>>(*envs, *jk, *bounds, pool, batch_head); break;
     case 285:
         buflen += 4032;

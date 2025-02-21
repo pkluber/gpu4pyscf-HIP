@@ -1,3 +1,5 @@
+#include "hip/hip_runtime.h"
+#include "hip/hip_runtime.h"
 /*
  * Copyright 2021-2024 The PySCF Developers. All Rights Reserved.
  *
@@ -14,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #define THREADS        32
 #define BLOCK_DIM   32
@@ -77,21 +79,21 @@ int CPdsymm_triu(double *a, int n, int counts)
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ntile, ntile, counts);
     _dsymm_triu<<<blocks, threads>>>(a, n);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;
 }
 
 __host__
-int transpose_sum(cudaStream_t stream, double *a, int n, int counts){
+int transpose_sum(hipStream_t stream, double *a, int n, int counts){
     int ntile = (n + THREADS - 1) / THREADS;
     dim3 threads(THREADS, THREADS);
     dim3 blocks(ntile, ntile, counts);
     _transpose_sum<<<blocks, threads, 0, stream>>>(a, n);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
         return 1;
     }
     return 0;

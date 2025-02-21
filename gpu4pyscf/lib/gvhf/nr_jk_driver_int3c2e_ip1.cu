@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cuda_runtime.h>
+#include <hip/hip_runtime.h>
 
 #include "gint/gint.h"
 #include "gint/config.h"
@@ -33,7 +33,7 @@
 #include "g3c2e_ip1.cu"
 
 __host__
-static int GINTrun_tasks_int3c2e_ip1_jk(JKMatrix *jk, BasisProdOffsets *offsets, GINTEnvVars *envs, cudaStream_t stream)
+static int GINTrun_tasks_int3c2e_ip1_jk(JKMatrix *jk, BasisProdOffsets *offsets, GINTEnvVars *envs, hipStream_t stream)
 {
     int nrys_roots = envs->nrys_roots;
     int ntasks_ij = offsets->ntasks_ij;
@@ -124,9 +124,9 @@ static int GINTrun_tasks_int3c2e_ip1_jk(JKMatrix *jk, BasisProdOffsets *offsets,
         }
     }
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA Error of GINTint2e_jk_kernel: %s\n", cudaGetErrorString(err));
+    hipError_t err = hipGetLastError();
+    if (err != hipSuccess) {
+        fprintf(stderr, "CUDA Error of GINTint2e_jk_kernel: %s\n", hipGetErrorString(err));
         return 1;
     }
     return 0;
@@ -134,7 +134,7 @@ static int GINTrun_tasks_int3c2e_ip1_jk(JKMatrix *jk, BasisProdOffsets *offsets,
 
 
 extern "C" { __host__
-int GINTbuild_int3c2e_ip1_jk(cudaStream_t stream, BasisProdCache *bpcache,
+int GINTbuild_int3c2e_ip1_jk(hipStream_t stream, BasisProdCache *bpcache,
                  double *vj, double *vk, double *dm, double *rhoj, double *rhok,
                  int *ao_offsets, int nao, int naux, int n_dm,
                  int *bins_locs_ij, int ntasks_kl, int ncp_ij, int cp_kl_id, double omega)
@@ -144,7 +144,7 @@ int GINTbuild_int3c2e_ip1_jk(cudaStream_t stream, BasisProdCache *bpcache,
     int ng[4] = {1,0,0,0};
 
     // move bpcache to constant memory
-    checkCudaErrors(cudaMemcpyToSymbol(c_bpcache, bpcache, sizeof(BasisProdCache)));
+    checkCudaErrors(hipMemcpyToSymbol(HIP_SYMBOL(c_bpcache), bpcache, sizeof(BasisProdCache)));
 
     JKMatrix jk;
     jk.n_dm = n_dm;
